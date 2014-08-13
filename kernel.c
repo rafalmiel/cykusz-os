@@ -21,7 +21,10 @@ void kernel_main()
 {
 	vga_initialize();
 	
-	vga_setcolor(vga_makecolor(COLOR_WHITE, COLOR_RED));
+	vga_setcolor(vga_makecolor(COLOR_LIGHT_GREEN, COLOR_BLACK));
 
-	vga_writestring("Hello World!!");
+	vga_clear();
+
+	vga_writestring("System loaded.");
+
 }
