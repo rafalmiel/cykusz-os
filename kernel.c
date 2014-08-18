@@ -13,12 +13,15 @@
 #endif
 
 #include "arch/x86/io.h"
+#include "arch/x86/descriptor_tables.h"
 
 #if defined(__cplusplus)
 extern "C"
 #endif
 void kernel_main()
 {
+	init_descriptor_tables();
+
 	vga_initialize();
 	
 	vga_setcolor(vga_makecolor(COLOR_LIGHT_GREEN, COLOR_BLACK));
