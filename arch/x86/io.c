@@ -121,3 +121,33 @@ void vga_writestring(const char *data)
 
 	vga_movecursor();
 }
+
+
+void vga_writeint(u32 n)
+{
+	if (n == 0)
+	{
+		vga_putchar('0');
+		return;
+	}
+
+	s32 acc = n;
+	char c[32];
+	int i = 0;
+	while (acc > 0)
+	{
+		c[i] = '0' + acc%10;
+		acc /= 10;
+		i++;
+	}
+	c[i] = 0;
+
+	char c2[32];
+	c2[i--] = 0;
+	int j = 0;
+	while(i >= 0)
+	{
+	    c2[i--] = c[j++];
+	}
+	vga_writestring(c2);
+}

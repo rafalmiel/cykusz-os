@@ -34,5 +34,6 @@ u8 vga_makecolor(enum vga_color fg, enum vga_color bg);
 void vga_setcolor(u8 color);
 
 void vga_writestring(const char* data);
+void vga_writeint(u32 val);
 
 #endif // IO_H

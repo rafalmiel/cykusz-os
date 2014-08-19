@@ -12,5 +12,14 @@ gdt_flush:
 	mov %ax, %ss
 
 	jmp $0x08, $flush
+
 flush:
+	ret
+
+
+.global idt_flush
+
+idt_flush:
+	movl 4(%esp), %eax
+	lidt (%eax)
 	ret

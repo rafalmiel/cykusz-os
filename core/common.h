@@ -12,6 +12,7 @@ typedef int32_t s32;
 typedef uint32_t u32;
 
 size_t strlen(const char* str);
+void *memset(void *ptr, int value, u32 size);
 
 static inline void outb(u16 port, u8 val)
 {

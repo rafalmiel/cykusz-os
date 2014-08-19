@@ -28,6 +28,10 @@ void kernel_main()
 
 	vga_clear();
 
-	vga_writestring("System loaded.");
+	vga_writestring("System loaded.\n");
 
+	asm volatile ("int $22");
+	asm volatile ("int $23");
+
+	vga_writestring("Interrupts working.\n");
 }
