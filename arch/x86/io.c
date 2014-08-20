@@ -13,10 +13,10 @@ static void vga_movecursor(void)
 	u16 position = VGA_WIDTH * terminal_row + terminal_column;
 	// cursor LOW port to vga INDEX register
 	outb(0x3D4, 0x0F);
-	outb(0x3D5, (unsigned char)(position&0xFF));
+	outb(0x3D5, (u8)(position&0xFF));
 	// cursor HIGH port to vga INDEX register
 	outb(0x3D4, 0x0E);
-	outb(0x3D5, (unsigned char )((position>>8)&0xFF));
+	outb(0x3D5, (u8)((position>>8)&0xFF));
 }
 
 static u16 vga_makeentry(char c, uint8_t color)

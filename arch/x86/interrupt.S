@@ -1,16 +1,24 @@
 .macro ISR_NOERRCODE num
-.global isr\num
-isr\num:
-	push $0			# dummy error code
-	push $\num		# interrupt number
-	jmp isr_common_stub
+	.global isr\num
+	isr\num:
+		push $0			# dummy error code
+		push $\num		# interrupt number
+		jmp isr_common_stub
 .endm
 
 .macro ISR_ERRCODE num
-.global isr\num
-isr\num:
-	push $\num		# interrupt number
-	jmp isr_common_stub
+	.global isr\num
+	isr\num:
+		push $\num		# interrupt number
+		jmp isr_common_stub
+.endm
+
+.macro IRQ s d
+	.global irq\s
+	irq\s:
+		push $0
+		push $\d
+		jmp irq_common_stub
 .endm
 
 ISR_NOERRCODE 0
@@ -46,6 +54,23 @@ ISR_NOERRCODE 29
 ISR_NOERRCODE 30
 ISR_NOERRCODE 31
 
+IRQ 0, 32
+IRQ 1, 33
+IRQ 2, 34
+IRQ 3, 35
+IRQ 4, 36
+IRQ 5, 37
+IRQ 6, 38
+IRQ 7, 39
+IRQ 8, 40
+IRQ 9, 41
+IRQ 10, 42
+IRQ 11, 43
+IRQ 12, 44
+IRQ 13, 45
+IRQ 14, 46
+IRQ 15, 47
+
 .extern isr_handler
 
 isr_common_stub:
@@ -67,6 +92,37 @@ isr_common_stub:
 	add $4, %esp		# remove stack pointer from stack
 
 	pop %eax		# restore data segment descriptor
+
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+
+	popa			# restore registers
+	add $8, %esp		# remove int num and error code from stack
+	iret
+
+.extern irq_handler
+
+irq_common_stub:
+	pusha			# save registers
+
+	mov %ds, %ax
+	push %eax		# save data segment descriptor
+
+	mov $0x10, %ax
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+
+	push %esp		# pointer to stack frame
+
+	call irq_handler
+
+	add $4, %esp		# remove stack pointer from stack
+
+	pop %ebx		# restore data segment descriptor
 
 	mov %ax, %ds
 	mov %ax, %es

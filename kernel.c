@@ -14,6 +14,7 @@
 
 #include "arch/x86/io.h"
 #include "arch/x86/descriptor_tables.h"
+#include "arch/x86/timer.h"
 
 #if defined(__cplusplus)
 extern "C"
@@ -29,9 +30,10 @@ void kernel_main()
 	vga_clear();
 
 	vga_writestring("System loaded.\n");
+	vga_writestring("Interrupts working.\n");
 
-	asm volatile ("int $22");
 	asm volatile ("int $23");
 
-	vga_writestring("Interrupts working.\n");
+	asm volatile("sti");
+	init_timer(50);
 }

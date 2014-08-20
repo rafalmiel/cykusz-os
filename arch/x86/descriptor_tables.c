@@ -1,4 +1,5 @@
 #include "descriptor_tables.h"
+#include "isr.h"
 
 extern void gdt_flush(u32);
 extern void idt_flush(u32);
@@ -14,6 +15,8 @@ static gdt_ptr_t gdt_ptr;
 
 static idt_entry_t idt_entries[256];
 static idt_ptr_t idt_ptr;
+
+extern isr_t interrupt_handlers[];
 
 void init_descriptor_tables()
 {
@@ -54,6 +57,18 @@ static void init_idt(void)
 	idt_ptr.base = (u32)&idt_entries;
 
 	memset(&idt_entries, 0, sizeof(idt_entry_t)*256);
+	memset(interrupt_handlers, 0, sizeof(isr_t)*256);
+
+	outb(0x20, 0x11);
+	outb(0xA0, 0x11);
+	outb(0x21, 0x20);
+	outb(0xA1, 0x28);
+	outb(0x21, 0x04);
+	outb(0xA1, 0x02);
+	outb(0x21, 0x01);
+	outb(0xA1, 0x01);
+	outb(0x21, 0x0);
+	outb(0xA1, 0x0);
 
 	idt_set_gate(0, (u32)isr0, 0x08, 0x8E);
 	idt_set_gate(1, (u32)isr1, 0x08, 0x8E);
@@ -88,16 +103,33 @@ static void init_idt(void)
 	idt_set_gate(30, (u32)isr30, 0x08, 0x8E);
 	idt_set_gate(31, (u32)isr31, 0x08, 0x8E);
 
+	idt_set_gate(32, (u32)irq0, 0x08, 0x8E);
+	idt_set_gate(33, (u32)irq1, 0x08, 0x8E);
+	idt_set_gate(34, (u32)irq2, 0x08, 0x8E);
+	idt_set_gate(35, (u32)irq3, 0x08, 0x8E);
+	idt_set_gate(36, (u32)irq4, 0x08, 0x8E);
+	idt_set_gate(37, (u32)irq5, 0x08, 0x8E);
+	idt_set_gate(38, (u32)irq6, 0x08, 0x8E);
+	idt_set_gate(39, (u32)irq7, 0x08, 0x8E);
+	idt_set_gate(40, (u32)irq8, 0x08, 0x8E);
+	idt_set_gate(41, (u32)irq9, 0x08, 0x8E);
+	idt_set_gate(42, (u32)irq10, 0x08, 0x8E);
+	idt_set_gate(43, (u32)irq11, 0x08, 0x8E);
+	idt_set_gate(44, (u32)irq12, 0x08, 0x8E);
+	idt_set_gate(45, (u32)irq13, 0x08, 0x8E);
+	idt_set_gate(46, (u32)irq14, 0x08, 0x8E);
+	idt_set_gate(47, (u32)irq15, 0x08, 0x8E);
+
 	idt_flush((u32)&idt_ptr);
 }
 
 static void idt_set_gate(u8 num, u32 base, u16 sel, u8 flags)
 {
-	idt_entries[num].base_lo = base & 0xFFFF;
-	idt_entries[num].base_hi = (base >> 16) & 0xFFFF;
+	idt_entries[num].base_lo	= base & 0xFFFF;
+	idt_entries[num].base_hi	= (base >> 16) & 0xFFFF;
 
-	idt_entries[num].sel = sel;
-	idt_entries[num].always0 = 0;
+	idt_entries[num].sel		= sel;
+	idt_entries[num].always0	= 0;
 
-	idt_entries[num].flags = flags;
+	idt_entries[num].flags		= flags;
 }
