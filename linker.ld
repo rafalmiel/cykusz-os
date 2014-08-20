@@ -28,4 +28,6 @@ SECTIONS
 		*(.bss)
 		*(.bootstrap_stack)
 	}
+
+	__end = .;
 }

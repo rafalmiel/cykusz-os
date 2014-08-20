@@ -15,10 +15,12 @@
 #include "arch/x86/io.h"
 #include "arch/x86/descriptor_tables.h"
 #include "arch/x86/timer.h"
+#include "arch/x86/kheap.h"
 
 #if defined(__cplusplus)
 extern "C"
 #endif
+
 void kernel_main()
 {
 	init_descriptor_tables();
@@ -32,7 +34,13 @@ void kernel_main()
 	vga_writestring("System loaded.\n");
 	vga_writestring("Interrupts working.\n");
 
+	u32 addr = kmalloc_a(128);
+
+	vga_writestring("Allocated mem at addr: ");
+	vga_writeint(addr);
+	vga_writestring("\n");
+
 	asm volatile ("int $23");
 
-	init_timer(50);
+	//init_timer(50);
 }
