@@ -20,8 +20,12 @@ extern isr_t interrupt_handlers[];
 
 void init_descriptor_tables()
 {
+	asm volatile("cli");
+
 	init_gdt();
 	init_idt();
+
+	asm volatile("sti");
 }
 
 static void init_gdt(void)
