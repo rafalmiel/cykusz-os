@@ -3,17 +3,24 @@
 #include "isr.h"
 #include "io.h"
 
+isr_t interrupt_handlers[256];
+
 void isr_handler(registers_t *reg)
 {
-	vga_writestring("Received interrupt: ");
-	vga_writeint(reg->int_no);
-	vga_writestring(" err code: ");
-	vga_writeint(reg->err_code);
-	vga_writestring("\n");
+	if (interrupt_handlers[reg->int_no] != 0)
+	{
+		isr_t handler = interrupt_handlers[reg->int_no];
+		handler(reg);
+	}
+	else
+	{
+		vga_writestring("unhandled interrupt: ");
+		vga_writeint(reg->int_no);
+		vga_writestring("\n");
+	}
 
 }
 
-isr_t interrupt_handlers[256];
 
 void irq_handler(registers_t *reg)
 {

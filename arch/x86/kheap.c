@@ -1,7 +1,7 @@
 #include "kheap.h"
 
 extern u32 __end;		//defined in linker script
-static u32 placement_address = (u32)&__end;
+u32 placement_address = (u32)&__end;
 
 u32 kmalloc_int(u32 size, int align, u32 *phys)
 {

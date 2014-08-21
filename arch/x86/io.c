@@ -168,17 +168,17 @@ void vga_writehex(u32 n)
 
 		if (tmp >= 0xA)  {
 			noZeroes = 0;
-			vga_putchar(tmp-0xA+'a' );
+			vga_putchar(tmp - 0xA + 'a' );
 		} else {
 			noZeroes = 0;
-			vga_putchar(tmp+'0');
+			vga_putchar(tmp + '0');
 		}
 	}
 
 	tmp = n & 0xF;
 	if (tmp >= 0xA) {
-		vga_putchar(tmp-0xA+'a');
+		vga_putchar(tmp - 0xA + 'a');
 	} else {
-		vga_putchar(tmp+'0');
+		vga_putchar(tmp + '0');
 	}
 }

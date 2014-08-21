@@ -10,7 +10,8 @@ i686-elf-gcc -c arch/x86/descriptor_tables.c -o descriptor_tables.o -std=gnu99 -
 i686-elf-gcc -c arch/x86/isr.c -o isr.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I.
 i686-elf-gcc -c arch/x86/timer.c -o timer.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I.
 i686-elf-gcc -c arch/x86/kheap.c -o kheap.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I.
+i686-elf-gcc -c arch/x86/paging.c -o paging.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I.
 i686-elf-gcc -c core/common.c -o common.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I.
-i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib boot.o gdt.o kheap.o kernel.o io.o common.o descriptor_tables.o interrupt.o isr.o timer.o -lgcc
+i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib boot.o gdt.o kheap.o paging.o kernel.o io.o common.o descriptor_tables.o interrupt.o isr.o timer.o -lgcc
 qemu-system-i386 -kernel myos.bin
 
