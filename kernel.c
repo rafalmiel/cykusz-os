@@ -35,9 +35,15 @@ void kernel_main()
 	vga_writestring("Interrupts working.\n");
 
 	u32 addr = kmalloc_a(128);
+	u32 addr2 = kmalloc_a(128);
+	u32 addr3 = kmalloc_a(128);
 
 	vga_writestring("Allocated mem at addr: ");
-	vga_writeint(addr);
+	vga_writehex(addr);
+	vga_writestring(" ");
+	vga_writehex(addr2);
+	vga_writestring(" ");
+	vga_writehex(addr3);
 	vga_writestring("\n");
 
 	asm volatile ("int $23");

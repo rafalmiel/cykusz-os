@@ -125,8 +125,7 @@ void vga_writestring(const char *data)
 
 void vga_writeint(u32 n)
 {
-	if (n == 0)
-	{
+	if (n == 0) {
 		vga_putchar('0');
 		return;
 	}
@@ -134,8 +133,7 @@ void vga_writeint(u32 n)
 	s32 acc = n;
 	char c[32];
 	int i = 0;
-	while (acc > 0)
-	{
+	while (acc > 0) {
 		c[i] = '0' + acc%10;
 		acc /= 10;
 		i++;
@@ -144,10 +142,43 @@ void vga_writeint(u32 n)
 
 	char c2[32];
 	c2[i--] = 0;
+
 	int j = 0;
-	while(i >= 0)
-	{
-	    c2[i--] = c[j++];
+	while(i >= 0) {
+		c2[i--] = c[j++];
 	}
+
 	vga_writestring(c2);
+}
+
+void vga_writehex(u32 n)
+{
+	s32 tmp;
+
+	vga_writestring("0x");
+
+	char noZeroes = 1;
+
+	int i;
+	for (i = 28; i > 0; i -= 4)
+	{
+		tmp = (n >> i) & 0xF;
+		if (tmp == 0 && noZeroes != 0)
+			continue;
+
+		if (tmp >= 0xA)  {
+			noZeroes = 0;
+			vga_putchar(tmp-0xA+'a' );
+		} else {
+			noZeroes = 0;
+			vga_putchar(tmp+'0');
+		}
+	}
+
+	tmp = n & 0xF;
+	if (tmp >= 0xA) {
+		vga_putchar(tmp-0xA+'a');
+	} else {
+		vga_putchar(tmp+'0');
+	}
 }
