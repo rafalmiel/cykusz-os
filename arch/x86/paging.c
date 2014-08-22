@@ -86,6 +86,13 @@ static void free_frame(page_t *page)
 	}
 }
 
+static void enable_paging()
+{
+	u32 cr0;
+	asm volatile("mov %%cr0, %0" : "=r"(cr0));
+	cr0 |= 0x80000000; // Enable paging
+	asm volatile("mov %0, %%cr0" :: "r"(cr0));
+}
 
 void initialise_paging()
 {
@@ -104,21 +111,17 @@ void initialise_paging()
 		i += 0x1000;
 	}
 
-
 	register_interrupt_handler(14, page_fault);
 
 	switch_page_directory(kernel_directory);
-}
 
+	enable_paging();
+}
 
 void switch_page_directory(page_directory_t *new_dir)
 {
 	current_directory = new_dir;
 	asm volatile("mov %0, %%cr3" : : "r"(&new_dir->tablesPhysical));
-	u32 cr0;
-	asm volatile("mov %%cr0, %0" : "=r"(cr0));
-	cr0 |= 0x80000000; // Enable paging
-	asm volatile("mov %0, %%cr0" :: "r"(cr0));
 }
 
 
