@@ -106,6 +106,10 @@ void vga_clear(void)
 			terminal_buffer[index] = blank;
 		}
 	}
+
+	terminal_row = 0;
+	terminal_column = 0;
+	vga_movecursor();
 }
 
 void vga_setcolor(u8 color)
