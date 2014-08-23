@@ -5,10 +5,14 @@ u32 placement_address = (u32)&__end;
 
 u32 kmalloc_int(u32 size, int align, u32 *phys)
 {
-	if (align == 1 && (placement_address & 0xFFFFF000)) {
+	if (align == 1 && (placement_address & 0xFFF)) {
 		// align the placement address
 		placement_address &= 0xFFFFF000;
 		placement_address += 0x1000;
+	} else if (placement_address & 0x1F) {
+		// align to 32 bits
+		placement_address &= 0xFFFFFFE0;
+		placement_address += 0x20;
 	}
 
 	if (phys) {
