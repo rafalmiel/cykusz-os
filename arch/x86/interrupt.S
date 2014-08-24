@@ -1,25 +1,25 @@
-.macro ISR_NOERRCODE num
-	.global isr\num
-	isr\num:
-		push $0			# dummy error code
-		push $\num		# interrupt number
+%macro ISR_NOERRCODE 1
+	[global isr%1]
+	isr%1:
+		push byte 0		; dummy error code
+		push byte %1		; interrupt number
 		jmp isr_common_stub
-.endm
+%endmacro
 
-.macro ISR_ERRCODE num
-	.global isr\num
-	isr\num:
-		push $\num		# interrupt number
+%macro ISR_ERRCODE 1
+	[global isr%1]
+	isr%1:
+		push byte %1		; interrupt number
 		jmp isr_common_stub
-.endm
+%endmacro
 
-.macro IRQ s d
-	.global irq\s
-	irq\s:
-		push $0
-		push $\d
+%macro IRQ 2
+	[global irq%1]
+	irq%1:
+		push byte 0		; interrupt number
+		push byte %2		; interrupt number
 		jmp irq_common_stub
-.endm
+%endmacro
 
 ISR_NOERRCODE 0
 ISR_NOERRCODE 1
@@ -71,64 +71,62 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
-.extern isr_handler
+extern isr_handler
 
 isr_common_stub:
-	pusha			# save registers
+	pusha			; save registers
 
-	mov %ds, %ax
-	push %eax		# save data segment descriptor
+	mov ax, ds
+	push eax		; save data segment descriptor
 
-	mov $0x10, %ax
-	mov %ax, %ds
-	mov %ax, %es
-	mov %ax, %fs
-	mov %ax, %gs
+	mov ax, 0x10
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
 
-	push %esp		# pointer to stack frame
+	push esp		; pointer to stack frame
 
 	call isr_handler
 
-	add $4, %esp		# remove stack pointer from stack
+	add esp, 4		; remove stack pointer from stack
 
-	pop %eax		# restore data segment descriptor
+	pop ebx			; restore data segment descriptor
+	mov ds, bx
+	mov es, bx
+	mov fs, bx
+	mov gs, bx
 
-	mov %ax, %ds
-	mov %ax, %es
-	mov %ax, %fs
-	mov %ax, %gs
-
-	popa			# restore registers
-	add $8, %esp		# remove int num and error code from stack
+	popa			; restore registers
+	add esp, 8		; remove int num and error code from stack
 	iret
 
-.extern irq_handler
+extern irq_handler
 
 irq_common_stub:
-	pusha			# save registers
+	pusha			; save registers
 
-	mov %ds, %ax
-	push %eax		# save data segment descriptor
+	mov ax, ds
+	push eax		; save data segment descriptor
 
-	mov $0x10, %ax
-	mov %ax, %ds
-	mov %ax, %es
-	mov %ax, %fs
-	mov %ax, %gs
+	mov ax, 0x10
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
 
-	push %esp		# pointer to stack frame
+	push esp		; pointer to stack frame
 
 	call irq_handler
 
-	add $4, %esp		# remove stack pointer from stack
+	add esp, 4		; remove stack pointer from stack
 
-	pop %ebx		# restore data segment descriptor
+	pop ebx			; restore data segment descriptor
+	mov ds, bx
+	mov es, bx
+	mov fs, bx
+	mov gs, bx
 
-	mov %ax, %ds
-	mov %ax, %es
-	mov %ax, %fs
-	mov %ax, %gs
-
-	popa			# restore registers
-	add $8, %esp		# remove int num and error code from stack
+	popa			; restore registers
+	add esp, 8		; remove int num and error code from stack
 	iret
