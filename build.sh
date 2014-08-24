@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #nasm -felf ./arch/x86/boot.S -o boot.o
-i686-elf-as arch/x86/boot.S -o boot.o
+nasm -felf arch/x86/boot.S -o boot.o
 i686-elf-as arch/x86/gdt.S -o gdt.o
 i686-elf-as arch/x86/interrupt.S -o interrupt.o
 i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I.

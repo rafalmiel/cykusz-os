@@ -1,31 +1,29 @@
 # Declare constants used for creating a multiboot header.
-.set ALIGN,    1<<0
-.set MEMINFO,  1<<1
-.set FLAGS,    ALIGN | MEMINFO
-.set MAGIC,    0x1BADB002
-.set CHECKSUM, -(MAGIC + FLAGS)
+MBALIGN		equ	1<<0
+MEMINFO		equ	1<<1
+FLAGS		equ	MBALIGN | MEMINFO
+MAGIC		equ	0x1BADB002
+CHECKSUM	equ	-(MAGIC + FLAGS)
 
-.section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
+section .multiboot
+align 4
+	dd MAGIC
+	dd FLAGS
+	dd CHECKSUM
 
-.section .bootstrap_stack, "aw", @nobits
+section .bootstrap_stack
+align 4
 stack_bottom:
-.skip 16384 # 16 KiB
+times 16384 db 0
 stack_top:
 
-.section .text
-.global _start
-.type _start, @function
-_start:
-	movl $stack_top, %esp
+section .text
+global _start
 
+_start:
+	mov esp, stack_top
+
+	extern kernel_main
 	call kernel_main
 
 	hlt
-.Lhang:
-	jmp .Lhang
-
-.size _start, . - _start
