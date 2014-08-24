@@ -36,8 +36,6 @@ void kernel_main()
 
 	vga_writestring("System loaded.\n");
 
-	u32 *ptr = (u32*)0xA0000000;
-	u32 do_page_fault = *ptr;		// Test page fault
-
-	*ptr = 42;
+	asm volatile("sti");
+	init_timer(40);
 }

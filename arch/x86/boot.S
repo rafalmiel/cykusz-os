@@ -26,4 +26,6 @@ _start:
 	extern kernel_main
 	call kernel_main
 
+.hang:
 	hlt
+	jmp .hang
