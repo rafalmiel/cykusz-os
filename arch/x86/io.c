@@ -91,7 +91,7 @@ void vga_initialize(void)
 	terminal_row = 0;
 	terminal_column = 0;
 	terminal_color = vga_makecolor(COLOR_WHITE, COLOR_BLACK);
-	terminal_buffer = (u16*) 0xB8000;
+	terminal_buffer = (u16*) 0xC00B8000;
 	vga_clear();
 }
 

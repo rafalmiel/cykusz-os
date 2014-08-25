@@ -1,31 +1,116 @@
-# Declare constants used for creating a multiboot header.
-MBALIGN		equ	1<<0
-MEMINFO		equ	1<<1
-FLAGS		equ	MBALIGN | MEMINFO
-MAGIC		equ	0x1BADB002
-CHECKSUM	equ	-(MAGIC + FLAGS)
+global _loader
+extern kernel_main
 
-section .multiboot
+MODULEALIGN		equ	1<<0
+MEMINFO			equ	1<<1
+FLAGS			equ	MODULEALIGN | MEMINFO
+MAGIC			equ	0x1BADB002
+CHECKSUM		equ	-(MAGIC + FLAGS)
+
+KERNEL_VIRTUAL_BASE	equ	0xC0000000			; 3GB
+KERNEL_PAGE_NUMBER	equ	(KERNEL_VIRTUAL_BASE >> 22)	; Page directory index of kernels page entries
+
+section .data
+align 0x1000
+global BootPageEntry
+BootPageEntry:
+	; Page entry, will contain identity mapping of the initial kernel data
+	times 1024 dd 0
+
+align 0x1000
+BootPageDirectory:
+	; Page directory placeholder, will contain pointers to BootPageEntry
+	; at page nr 0 and KERNEL_PAGE_NUMBER
+	times 1024 dd 0
+
+section .text
 align 4
+MultiBootHeader:
 	dd MAGIC
 	dd FLAGS
 	dd CHECKSUM
 
-section .bootstrap_stack
-align 4
-stack_bottom:
-times 16384 db 0
-stack_top:
+; reserve initial kernel stack space -- thats 16k.
+STACKSIZE equ 0x4000
 
-section .text
-global _start
+; setting up entry point for linker
+global loader
+loader equ (_loader - KERNEL_VIRTUAL_BASE)
 
-_start:
-	mov esp, stack_top
+extern __end
 
-	extern kernel_main
-	call kernel_main
+; Setup BootPageDirectory mapping (put pointers to BootPageEntry at appropriate
+; places
+fill_page_directory:
+	push eax
+	push ebx
+
+	mov eax, BootPageDirectory - KERNEL_VIRTUAL_BASE
+	mov ebx, BootPageEntry - KERNEL_VIRTUAL_BASE
+	add ebx, 0x7
+	mov [eax], ebx
+	mov [eax + KERNEL_PAGE_NUMBER*4], ebx
+
+	pop ebx
+	pop eax
+	ret
+
+; Setup identity mapping of the kernel data
+fill_page_entry:
+	push eax
+	push ebx
+	push ecx
+	push edx
+
+	mov edx, BootPageEntry - KERNEL_VIRTUAL_BASE
+	mov ebx, __end - KERNEL_VIRTUAL_BASE
+	mov ecx, 0
+	mov eax, 0x7					; Flags
+fill_page_entry_loop:
+	mov [edx + ecx], eax
+
+	cmp eax, ebx
+	jg fill_page_entry_loop_fin
+
+	add eax, 0x1000
+	add ecx, 0x4
+
+	jmp fill_page_entry_loop
+fill_page_entry_loop_fin:
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax
+
+	ret
+
+_loader:
+	call fill_page_directory
+	call fill_page_entry
+
+	mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+	mov cr3, ecx					; Set address of BPD
+
+	mov ecx, cr0
+	or ecx, 0x80000000				; Enable paging
+	mov cr0, ecx
+
+	lea ecx, [StartInHigherHalf]
+	jmp ecx						; Jmp to higher half kernel
+
+StartInHigherHalf:
+	mov dword [BootPageDirectory], 0		; Remove mapping of first ~1MB
+	invlpg [0]
+
+	mov esp, stack+STACKSIZE			; set up the stack
+	call  kernel_main				; call kernel proper
 
 .hang:
-	hlt
+	hlt						; halt machine should kernel return
 	jmp .hang
+
+
+section .bss
+align 32
+stack:
+	resb STACKSIZE					; reserve 16k stack on a quadword boundary
