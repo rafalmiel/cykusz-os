@@ -1,0 +1,94 @@
+#include "frame.h"
+#include "io.h"
+
+#define INDEX_FROM_BIT(a) ((a) / (8 * 4))
+#define OFFSET_FROM_BIT(a) ((a) % (8 * 4))
+
+static const u32 nframes = 128 * 32;
+static u32 frames[128];				// 16MB
+
+extern u32 __end;
+
+static void set_frame(u32 frame_addr)
+{
+	u32 frame = frame_addr / 0x1000;
+	u32 idx = INDEX_FROM_BIT(frame);
+	u32 off = OFFSET_FROM_BIT(frame);
+	frames[idx] |= (0x1 << off);
+}
+
+static void clear_frame(u32 frame_addr)
+{
+	u32 frame = frame_addr / 0x1000;
+	u32 idx = INDEX_FROM_BIT(frame);
+	u32 off = OFFSET_FROM_BIT(frame);
+	frames[idx] &= ~(0x1 << off);
+}
+
+static u32 test_frame(u32 frame_addr)
+{
+	u32 frame = frame_addr / 0x1000;
+	u32 idx = INDEX_FROM_BIT(frame);
+	u32 off = OFFSET_FROM_BIT(frame);
+	return (frames[idx] & (0x1 << off));
+}
+
+static u32 first_frame()
+{
+	u32 i, j;
+	for (i = 0; i < INDEX_FROM_BIT(nframes); ++i) {
+		if (frames[i] != 0xFFFFFFFF) {
+			for (j = 0; j < 32; ++j) {
+				u32 toTest = 0x1 << j;
+				if (!(frames[i] & toTest)) {
+					return i * 4 * 8 + j;
+				}
+			}
+		}
+	}
+
+	return -1;
+}
+
+void alloc_frame(page_t *page)
+{
+	if (page->frame != 0) {
+		return;
+	} else {
+		u32 idx = first_frame();
+
+		if (idx == (u32)-1) {
+			vga_writestring("no frames!");
+			asm volatile("hlt");
+		}
+
+		set_frame(idx * 0x1000);
+		page->present = 1;
+		page->rw = 1;
+		page->user = 1;
+		page->frame = idx;
+	}
+
+}
+
+void free_frame(page_t *page)
+{
+	u32 frame;
+	if (!(frame = page->frame)) {
+		return;
+	} else {
+		clear_frame(frame);
+		page->frame = 0x0;
+	}
+}
+
+void initialise_frames()
+{
+	memset(frames, 0, 4 * 128);
+	const u32 fin = VTP((u32)&__end);
+	u32 addr = 0;
+	while (addr < fin) {
+		set_frame(addr);
+		addr += 0x1000;
+	}
+}

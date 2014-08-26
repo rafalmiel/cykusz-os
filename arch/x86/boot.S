@@ -11,13 +11,18 @@ KERNEL_VIRTUAL_BASE	equ	0xC0000000			; 3GB
 KERNEL_PAGE_NUMBER	equ	(KERNEL_VIRTUAL_BASE >> 22)	; Page directory index of kernels page entries
 
 section .data
+global VirtualBase
+VirtualBase:
+	dd KERNEL_VIRTUAL_BASE
+
 align 0x1000
 global BootPageEntry
 BootPageEntry:
-	; Page entry, will contain identity mapping of the initial kernel data
-	times 1024 dd 0
+	; Page entries, will contain identity mapping of the initial kernel data
+	times 1024 * 256 dd 0
 
 align 0x1000
+global BootPageDirectory
 BootPageDirectory:
 	; Page directory placeholder, will contain pointers to BootPageEntry
 	; at page nr 0 and KERNEL_PAGE_NUMBER
@@ -44,13 +49,25 @@ extern __end
 fill_page_directory:
 	push eax
 	push ebx
+	push ecx
 
 	mov eax, BootPageDirectory - KERNEL_VIRTUAL_BASE
 	mov ebx, BootPageEntry - KERNEL_VIRTUAL_BASE
+	mov ecx, 0
 	add ebx, 0x7
+
+fill_page_directory_loop:
 	mov [eax], ebx
 	mov [eax + KERNEL_PAGE_NUMBER*4], ebx
 
+	add eax, 4			; Move index in BootPageDirectory
+	add ebx, 1024 * 4		; Move pointer to BootPageEntry
+	add ecx, 1			; Inc counter index
+
+	cmp ecx, 256			; Stop after mapping 256 entries
+	jl fill_page_directory_loop
+
+	pop ecx
 	pop ebx
 	pop eax
 	ret
@@ -69,14 +86,12 @@ fill_page_entry:
 fill_page_entry_loop:
 	mov [edx + ecx], eax
 
-	cmp eax, ebx
-	jg fill_page_entry_loop_fin
-
 	add eax, 0x1000
 	add ecx, 0x4
 
-	jmp fill_page_entry_loop
-fill_page_entry_loop_fin:
+	cmp eax, ebx
+	jle fill_page_entry_loop
+
 	pop edx
 	pop ecx
 	pop ebx

@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define VTP(m) ((m) - 0xC0000000)
+#define PTV(m) ((m) + 0xC0000000)
+
 typedef int8_t s8;
 typedef uint8_t u8;
 typedef int16_t s16;
