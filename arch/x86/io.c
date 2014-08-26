@@ -186,3 +186,17 @@ void vga_writehex(u32 n)
 		vga_putchar(tmp + '0');
 	}
 }
+
+
+void vga_writeintnl(u32 val)
+{
+	vga_writeint(val);
+	vga_writestring("\n");
+}
+
+
+void vga_writehexnl(u32 val)
+{
+	vga_writehex(val);
+	vga_writestring("\n");
+}

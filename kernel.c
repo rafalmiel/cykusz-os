@@ -37,8 +37,7 @@ void kernel_main()
 		vga_writestring(" @ ");
 		vga_writehex(addr);
 		vga_writestring(" @ ");
-		vga_writehex((u32)i);
-		vga_writestring("\n");
+		vga_writehexnl((u32)i);
 	}
 }
 

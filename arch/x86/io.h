@@ -35,6 +35,8 @@ void vga_setcolor(u8 color);
 
 void vga_writestring(const char* data);
 void vga_writeint(u32 val);
+void vga_writeintnl(u32 val);
 void vga_writehex(u32 val);
+void vga_writehexnl(u32 val);
 
 #endif // IO_H
