@@ -3,16 +3,11 @@
 #include "frame.h"
 #include "io.h"
 
-extern u32 __end;		//defined in linker script
-u32 placement_address = (u32)&__end;
 static heap_t *s_heap = 0;
-
-#define K4 0x1000
-#define B32 0x20
 
 u32 heap_malloc(heap_t *heap, u32 size, int a, u32 *phys);
 
-static u32 align(u32 addr, u32 to)
+static inline u32 align(u32 addr, u32 to)
 {
 	if (addr & (to - 1)) {
 		addr &= ~(to - 1);
@@ -20,6 +15,16 @@ static u32 align(u32 addr, u32 to)
 	}
 
 	return addr;
+}
+
+static inline u32 align_4K(u32 addr)
+{
+	return align(addr, 0x1000);
+}
+
+static inline u32 align_32B(u32 addr)
+{
+	return align(addr, 0x20);
 }
 
 u32 kmalloc_int(u32 size, int align, u32 *phys)
@@ -49,7 +54,7 @@ u32 kmalloc(u32 size)
 
 static void expand(heap_t *heap, u32 size)
 {
-	size = align(size, K4);
+	size = align_4K(size);
 
 	if (heap->end_addr + size <= heap->max_addr) {
 		u32 dest = heap->end_addr + size;
@@ -62,14 +67,14 @@ static void expand(heap_t *heap, u32 size)
 	}
 }
 
-u32 heap_malloc(heap_t *heap, u32 size, int a, u32 *phys)
+u32 heap_malloc(heap_t *heap, u32 size, int align, u32 *phys)
 {
 	u32 placement_address = heap->current_addr;
 
-	if (a == 1) {
-		placement_address = align(placement_address, K4);
+	if (align == 1) {
+		placement_address = align_4K(placement_address);
 	} else {
-		placement_address = align(placement_address, B32);
+		placement_address = align_32B(placement_address);
 	}
 
 	if (placement_address + size > heap->end_addr) {
@@ -85,14 +90,18 @@ u32 heap_malloc(heap_t *heap, u32 size, int a, u32 *phys)
 	return placement_address;
 }
 
-void initialise_heap(heap_t *heap, u32 start, u32 size, u32 maxend)
+void init_heap(heap_t *heap, u32 start, u32 size, u32 maxend)
 {
-	heap->start_addr = align(start, K4);
+	heap->start_addr = align_4K(start);
 	heap->current_addr = heap->start_addr;
 	heap->end_addr = heap->start_addr;
-	heap->max_addr = align(maxend, K4);
+	heap->max_addr = align_4K(maxend);
 
 	expand(heap, size);
+}
 
+
+void heap_set_current(heap_t *heap)
+{
 	s_heap = heap;
 }

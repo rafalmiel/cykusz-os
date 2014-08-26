@@ -3,46 +3,14 @@
 #include "kheap.h"
 #include "frame.h"
 
-extern u32 placement_address;		// Defined in kheap.c
-extern page_table_t BootPageEntry;
-extern u32 BootPageDirectory;
+extern page_table_t BootPageEntry;	// Kernel Page entries declared in boot.S
+extern u32 BootPageDirectory;		// Kernel Page Dir declared in boot.S
 
-static page_directory_t kernel_page_directory;
-static page_directory_t *current_directory = &kernel_page_directory;
+static page_directory_t kernel_pd;
 
 static heap_t heap;
 
-void initialise_paging()
-{
-	initialise_frames();
-
-	memset(&kernel_page_directory, 0, sizeof kernel_page_directory);
-
-	kernel_page_directory.tablesPhysical = &BootPageDirectory;
-
-	for (u32 i = 0; i < 256; ++i) {
-		kernel_page_directory.tables[768 + i] = &BootPageEntry + i;
-	}
-
-	initialise_heap(&heap, 0xD0000000, 1024 * 4, 0xE0000000);
-
-	register_interrupt_handler(14, page_fault);
-}
-
-page_t *get_page(u32 address)
-{
-	address /= 0x1000;
-
-	u32 table_idx = address / 1024;
-
-	if (kernel_page_directory.tables[table_idx]) {
-		return &kernel_page_directory.tables[table_idx]->pages[address % 1024];
-	} else {
-		return 0;
-	}
-}
-
-void page_fault(registers_t *regs)
+static void page_fault(registers_t *regs)
 {
 	u32 faulting_address;
 	asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
@@ -74,4 +42,42 @@ void page_fault(registers_t *regs)
 	vga_writestring("\n");
 
 	asm volatile("hlt");
+}
+
+void init_paging()
+{
+	initialise_frames();
+
+	memset(&kernel_pd, 0, sizeof kernel_pd);
+
+	kernel_pd.tablesPhysical = &BootPageDirectory;
+
+	for (u32 i = 0; i < 256; ++i) {
+		kernel_pd.tables[768 + i] = &BootPageEntry + i;
+	}
+
+	/**
+	 * Max kernel heap size is 256MB
+	 */
+	init_heap(&heap, 0xD0000000, 1024 * 4, 0xE0000000);
+
+	heap_set_current(&heap);
+
+	register_interrupt_handler(14, page_fault);
+}
+
+page_t *get_page(u32 address)
+{
+	address /= 0x1000;
+
+	u32 table_idx = address / 1024;
+
+	/**
+	 * TODO: allocate table entries on heap in case they are not present
+	 */
+	if (kernel_pd.tables[table_idx]) {
+		return &kernel_pd.tables[table_idx]->pages[address % 1024];
+	} else {
+		return 0;
+	}
 }

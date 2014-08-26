@@ -22,21 +22,17 @@
 extern "C"
 #endif
 
-extern u32 BootPageDirectory;
-extern u32 BootPageEntry;
-extern u32 VirtualBase;
-extern u32 __end;
-
 void kernel_main()
 {
-	vga_initialize();
+	init_vga();
 	init_descriptor_tables();
-	initialise_paging();
+	init_paging();
 
+	// Test some allocations..
 	for (u32 i = 0; i < 20; ++i) {
 		u32 addr = 0;
-		u32* i = (u32*)kmalloc_p(4, &addr);
-		*i = 33;
+		u32* i = (u32*)kmalloc_p(1025 * 4, &addr);
+		*(i) = 33;
 		vga_writehex(*i);
 		vga_writestring(" @ ");
 		vga_writehex(addr);

@@ -86,7 +86,7 @@ u8 vga_makecolor(enum vga_color fg, enum vga_color bg)
 	return fg | bg << 4;
 }
 
-void vga_initialize(void)
+void init_vga(void)
 {
 	terminal_row = 0;
 	terminal_column = 0;

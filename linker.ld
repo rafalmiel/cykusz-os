@@ -24,5 +24,5 @@ SECTIONS
 		_ebss = .;
 	}
 
-	__end = .;
+	__end = .; __phys_end = . - 0xC0000000;
 }

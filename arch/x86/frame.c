@@ -5,15 +5,16 @@
 #define OFFSET_FROM_BIT(a) ((a) % (8 * 4))
 
 static const u32 nframes = 128 * 32;
-static u32 frames[128];				// 16MB
+static u32 frames[128];			// 16MB
 
-extern u32 __end;
+extern u32 __phys_end;			// End of kernel in physical mem
 
 static void set_frame(u32 frame_addr)
 {
 	u32 frame = frame_addr / 0x1000;
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
+
 	frames[idx] |= (0x1 << off);
 }
 
@@ -22,9 +23,11 @@ static void clear_frame(u32 frame_addr)
 	u32 frame = frame_addr / 0x1000;
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
+
 	frames[idx] &= ~(0x1 << off);
 }
 
+#if 0 //unused for now
 static u32 test_frame(u32 frame_addr)
 {
 	u32 frame = frame_addr / 0x1000;
@@ -32,10 +35,12 @@ static u32 test_frame(u32 frame_addr)
 	u32 off = OFFSET_FROM_BIT(frame);
 	return (frames[idx] & (0x1 << off));
 }
+#endif
 
 static u32 first_frame()
 {
 	u32 i, j;
+
 	for (i = 0; i < INDEX_FROM_BIT(nframes); ++i) {
 		if (frames[i] != 0xFFFFFFFF) {
 			for (j = 0; j < 32; ++j) {
@@ -74,6 +79,7 @@ void alloc_frame(page_t *page)
 void free_frame(page_t *page)
 {
 	u32 frame;
+
 	if (!(frame = page->frame)) {
 		return;
 	} else {
@@ -84,8 +90,9 @@ void free_frame(page_t *page)
 
 void initialise_frames()
 {
+	const u32 fin = ((u32)&__phys_end);
+
 	memset(frames, 0, 4 * 128);
-	const u32 fin = VTP((u32)&__end);
 	u32 addr = 0;
 	while (addr < fin) {
 		set_frame(addr);

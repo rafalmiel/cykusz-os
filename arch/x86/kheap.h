@@ -17,8 +17,7 @@ u32 kmalloc_p(u32 size, u32 *phys);
 u32 kmalloc_ap(u32 size, u32 *phys);
 u32 kmalloc(u32 size);
 
-void initialise_heap(heap_t *heap, u32 start, u32 size, u32 maxend);
+void init_heap(heap_t *heap, u32 start, u32 size, u32 maxend);
 
-u32 *getmem(heap_t *heap);
-
+void heap_set_current(heap_t *heap);
 #endif // KHEAP_H

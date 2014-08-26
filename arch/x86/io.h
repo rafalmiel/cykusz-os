@@ -25,7 +25,7 @@ enum vga_color
 	COLOR_WHITE = 15,
 };
 
-void vga_initialize(void);
+void init_vga(void);
 
 void vga_clear(void);
 
