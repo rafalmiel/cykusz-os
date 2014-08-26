@@ -33,23 +33,17 @@ void kernel_main()
 	init_descriptor_tables();
 	initialise_paging();
 
-	u32 *pd = &BootPageEntry;
-
-	for (u32 i = 0; i < 200; ++i) {
-//		vga_writehex(*(pd + i));
-//		vga_writestring("\n");
+	for (u32 i = 0; i < 20; ++i) {
+		u32 addr = 0;
+		u32* i = (u32*)kmalloc_p(4, &addr);
+		*i = 33;
+		vga_writehex(*i);
+		vga_writestring(" @ ");
+		vga_writehex(addr);
+		vga_writestring(" @ ");
+		vga_writehex((u32)i);
+		vga_writestring("\n");
 	}
-
-	u32 *i = (u32*)kmalloc(4);
-
-	*i = 33;
-
-	vga_writehex((u32)i);
-
-
-	//vga_clear();
-
-	//vga_writehex((u32)&BootPageDirectory);
 }
 
 

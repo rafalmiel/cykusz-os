@@ -40,9 +40,7 @@ typedef struct page_directory
 
 void initialise_paging();
 
-u32 supermalloc(u32 size);
-
-page_t *get_page(u32 address, int make, page_directory_t *dir);
+page_t *get_page(u32 address);
 
 void page_fault(registers_t *regs);
 
