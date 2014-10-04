@@ -33,6 +33,7 @@ ordered_array_t place_ordered_array(void *addr, u32 max_size,
 
 void destroy_ordered_array(ordered_array_t *array)
 {
+	kfree((u32)array);
 }
 
 void insert_ordered_array(type_t item, ordered_array_t *array)

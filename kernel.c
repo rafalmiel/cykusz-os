@@ -38,6 +38,8 @@ void kernel_main()
 		vga_writehex(addr);
 		vga_writestring(" @ ");
 		vga_writehexnl((u32)i);
+
+		kfree((u32)i);
 	}
 }
 

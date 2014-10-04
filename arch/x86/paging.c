@@ -57,9 +57,15 @@ void init_paging()
 	}
 
 	/**
+	 * Allocate physical memory for initial heap size
+	 */
+	for (u32 i = 0xD0000000; i < 0xD0100000; i += 0x1000)
+		alloc_frame(get_page(i));
+
+	/**
 	 * Max kernel heap size is 256MB
 	 */
-	init_heap(&heap, 0xD0000000, 1024 * 4, 0xE0000000);
+	init_heap(&heap, 0xD0000000, 0xD0100000, 0xE0000000, 0, 0);
 
 	heap_set_current(&heap);
 
