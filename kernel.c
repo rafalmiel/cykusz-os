@@ -28,21 +28,24 @@ void kernel_main()
 	init_descriptor_tables();
 	init_paging();
 
+	vga_writestring("malloc 8 a\n");
 	u32 a = kmalloc(8);
+	vga_writestring("malloc 8 b\n");
 	u32 b = kmalloc(8);
 
 	//vga_writehexnl(a);
 	//vga_writehexnl(b);
 
-	kfree(a);
+	vga_writestring("free b\n");
 	kfree(b);
+	vga_writestring("free a\n");
+	kfree(a);
 
+	vga_writestring("malloc 12 c\n");
 	u32 c = kmalloc(12);
 
-	vga_writehexnl(c);
-
+	vga_writestring("free c\n");
 	kfree(c);
-
 }
 
 

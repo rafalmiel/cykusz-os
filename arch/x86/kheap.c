@@ -82,7 +82,7 @@ static s32 find_smallest_hole(u32 size, u8 page_align, heap_t *heap)
 			if (((location + sizeof(header_t)) & 0xFFFFF000) != 0) {
 				offset = 0x1000 - ((location
 						   + sizeof(header_t))
-						      & 0x1000);
+						      % 0x1000);
 			}
 			s32 hole_size = (s32)header->size - offset;
 
@@ -328,7 +328,7 @@ void free(void *p, heap_t *heap)
 		return;
 
 	header_t *header = (header_t*)((u32)p - sizeof(header_t));
-	footer_t *footer = (footer_t*)((u32)header - header->size
+	footer_t *footer = (footer_t*)((u32)header + header->size
 				       - sizeof(footer_t));
 
 	header->is_hole = 1;

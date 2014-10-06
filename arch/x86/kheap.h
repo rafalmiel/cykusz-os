@@ -2,7 +2,7 @@
 #define KHEAP_H
 
 #define HEAP_MAGIC 0xDEADBEEF
-#define HEAP_MIN_SIZE 0x70000
+#define HEAP_MIN_SIZE 0x80000
 #define HEAP_INDEX_SIZE 0x20000
 
 #include <core/common.h>
