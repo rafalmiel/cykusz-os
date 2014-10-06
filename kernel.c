@@ -28,7 +28,7 @@ void kernel_main()
 	init_descriptor_tables();
 	init_paging();
 
-	kmalloc(0x10000 - sizeof(header_t) - sizeof(footer_t));
+	kmalloc(0x10000 - 14);
 	dbg_heap();
 	vga_writehexnl(kmalloc_a(8));
 	dbg_heap();

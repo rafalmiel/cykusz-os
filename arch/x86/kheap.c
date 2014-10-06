@@ -3,6 +3,19 @@
 #include "frame.h"
 #include "io.h"
 
+typedef struct
+{
+	u32 magic;
+	u8 is_hole;
+	u32 size;
+} header_t;
+
+typedef struct
+{
+	u32 magic;
+	header_t *header;
+} footer_t;
+
 static heap_t *s_heap = 0;
 
 void *alloc(u32 size, u8 page_align, heap_t *heap);

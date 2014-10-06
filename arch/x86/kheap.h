@@ -8,19 +8,6 @@
 #include <core/common.h>
 #include <core/ordered_array.h>
 
-typedef struct
-{
-	u32 magic;
-	u8 is_hole;
-	u32 size;
-} header_t;
-
-typedef struct
-{
-	u32 magic;
-	header_t *header;
-} footer_t;
-
 typedef struct heap
 {
 	ordered_array_t index;
