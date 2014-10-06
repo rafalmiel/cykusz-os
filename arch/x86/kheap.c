@@ -126,7 +126,9 @@ static void print_header(void *h)
 	vga_writestring(" is hole: ");
 	vga_writeint(header->is_hole);
 	vga_writestring(" size: ");
-	vga_writeintnl(header->size);
+	vga_writehex(header->size);
+	vga_writestring(" | footer->header: ");
+	vga_writehexnl((u32)((footer_t*)((u32)header + header->size - sizeof(footer_t)))->header);
 }
 
 static void print_heap(heap_t *heap)
@@ -296,7 +298,7 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 				- (orig_hole_pos & 0xFFF)
 				- sizeof(header_t);
 
-		u32 size = 0x1000 - (orig_hole_pos & 0xFFF)- sizeof(header_t);
+		u32 size = 0x1000 - (orig_hole_pos & 0xFFF) - sizeof(header_t);
 
 		header_t *hole_header = prepare_heap_frame(orig_hole_pos,
 							   size, 1);
@@ -323,8 +325,6 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		insert_ordered_array((void*)hole_header, &heap->index);
 	}
 
-	print_heap(heap);
-
 	return (void*)((u32)block_header + sizeof(header_t));
 }
 
@@ -342,13 +342,21 @@ void free(void *p, heap_t *heap)
 
 	char to_add = 1;
 
+	vga_writestring("free: ");
+	vga_writehexnl((u32)header);
+
 	footer_t *test_footer = (footer_t*)((u32)header - sizeof(footer_t));
 	if (test_footer->magic == HEAP_MAGIC
 	    && test_footer->header->is_hole == 1) {
 		u32 cache_size = header->size;
 		header = test_footer->header;
 		header->size += cache_size;
+
+		prepare_footer(header);
 		to_add = 0;
+
+		vga_writehex((u32)header);
+		vga_writestring(" merge left\n");
 	}
 
 	header_t *test_header = (header_t*)((u32)footer + sizeof(footer_t));
@@ -367,6 +375,8 @@ void free(void *p, heap_t *heap)
 			++iterator;
 
 		remove_ordered_array(iterator, &heap->index);
+		vga_writehex((u32)header);
+		vga_writestring(" merge right\n");
 	}
 
 	if ((u32)footer + sizeof(footer_t) == heap->end_address) {
