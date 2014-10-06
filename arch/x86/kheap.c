@@ -202,6 +202,35 @@ void init_heap(heap_t *heap, u32 start, u32 end, u32 max, u8 supervisor,
 	insert_ordered_array((void*)hole, &heap->index);
 }
 
+static header_t *prepare_header(u32 addr, u32 size, u8 is_hole)
+{
+	header_t *header = (header_t*)addr;
+
+	header->magic = HEAP_MAGIC;
+	header->is_hole = is_hole;
+	header->size = size;
+
+	return header;
+}
+
+static footer_t *prepare_footer(header_t *header)
+{
+	footer_t *footer = (footer_t*)((u32)header
+				       + header->size
+				       - sizeof(footer_t));
+	footer->magic = HEAP_MAGIC;
+	footer->header = header;
+
+	return footer;
+}
+
+static header_t *prepare_heap_frame(u32 addr, u32 size, u8 is_hole)
+{
+	header_t *header = prepare_header(addr, size, is_hole);
+	prepare_footer(header);
+
+	return header;
+}
 
 void *alloc(u32 size, u8 page_align, heap_t *heap)
 {
@@ -233,16 +262,11 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		}
 
 		if (idx == -1) {
-			header_t *header = (header_t*)old_end_address;
-			header->magic = HEAP_MAGIC;
-			header->size = new_length - old_length;
-			header->is_hole = 1;
 
-			footer_t *footer = (footer_t*)(old_end_address
-						       + header->size
-						       - sizeof(footer_t));
-			footer->magic = HEAP_MAGIC;
-			footer->header = header;
+			header_t *header = prepare_heap_frame(old_end_address,
+							      new_length
+							      - old_length,
+							      1);
 
 			insert_ordered_array((void*)header, &heap->index);
 		} else {
@@ -250,11 +274,7 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 								&heap->index);
 			header->size += new_length - old_length;
 
-			footer_t *footer = (footer_t*)((u32)header
-						       + header->size
-						       - sizeof(header_t));
-			footer->header = header;
-			footer->magic = HEAP_MAGIC;
+			prepare_footer(header);
 		}
 
 		return alloc(size, page_align, heap);
@@ -276,50 +296,28 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 				- (orig_hole_pos & 0xFFF)
 				- sizeof(header_t);
 
-		header_t *hole_header = (header_t*)orig_hole_pos;
-		hole_header->size = 0x1000 - (orig_hole_pos & 0xFFF)
-				- sizeof(header_t);
-		hole_header->magic = HEAP_MAGIC;
-		hole_header->is_hole = 1;
+		u32 size = 0x1000 - (orig_hole_pos & 0xFFF)- sizeof(header_t);
 
-		footer_t *hole_footer = (footer_t*)((u32)new_location
-						    - sizeof(footer_t));
-		hole_footer->magic = HEAP_MAGIC;
-		hole_footer->header = hole_header;
+		header_t *hole_header = prepare_heap_frame(orig_hole_pos,
+							   size, 1);
+
 		orig_hole_pos = new_location;
 		orig_hole_size = orig_hole_size - hole_header->size;
 	} else {
 		remove_ordered_array(iterator, &heap->index);
 	}
 
-	header_t *block_header = (header_t*)orig_hole_pos;
-	block_header->magic = HEAP_MAGIC;
-	block_header->is_hole = 0;
-	block_header->size = new_size;
-
-	footer_t *block_footer = (footer_t*)(orig_hole_pos
-					     + sizeof(header_t)
-					     + size);
-	block_footer->magic = HEAP_MAGIC;
-	block_footer->header = block_header;
+	header_t *block_header = prepare_heap_frame(orig_hole_pos, new_size, 0);
 
 	if (orig_hole_size - new_size > 0) {
-		header_t *hole_header = (header_t*)(orig_hole_pos
-						    + sizeof(header_t)
-						    + size
-						    + sizeof(footer_t));
-		hole_header->magic = HEAP_MAGIC;
-		hole_header->is_hole = 1;
-		hole_header->size = orig_hole_size - new_size;
-
-		footer_t *hole_footer = (footer_t*)((u32)hole_header
-						    + orig_hole_size
-						    - new_size
-						    - sizeof(footer_t));
-
-		if ((u32)hole_footer < heap->end_address) {
-			hole_footer->magic = HEAP_MAGIC;
-			hole_footer->header = hole_header;
+		header_t *hole_header = prepare_header(orig_hole_pos
+						       + sizeof(header_t)
+						       + size
+						       + sizeof(footer_t),
+						       orig_hole_size - new_size,
+						       1);
+		if ((u32)hole_header + hole_header->size < heap->end_address) {
+			prepare_footer(hole_header);
 		}
 
 		insert_ordered_array((void*)hole_header, &heap->index);
@@ -346,7 +344,7 @@ void free(void *p, heap_t *heap)
 
 	footer_t *test_footer = (footer_t*)((u32)header - sizeof(footer_t));
 	if (test_footer->magic == HEAP_MAGIC
-			&& test_footer->header->is_hole == 1) {
+	    && test_footer->header->is_hole == 1) {
 		u32 cache_size = header->size;
 		header = test_footer->header;
 		header->size += cache_size;
@@ -378,10 +376,7 @@ void free(void *p, heap_t *heap)
 
 		if (header->size - (old_length - new_length) > 0) {
 			header->size -= old_length - new_length;
-			footer = (footer_t*)((u32)header + header->size
-					     - sizeof(footer_t));
-			footer->magic = HEAP_MAGIC;
-			footer->header = header;
+			prepare_footer(header);
 		} else {
 			u32 iterator = 0;
 			while ((iterator < heap->index.size) &&
