@@ -100,6 +100,4 @@ void initialise_frames()
 		addr += 0x1000;
 		cnt++;
 	}
-
-	vga_writeintnl(cnt);
 }

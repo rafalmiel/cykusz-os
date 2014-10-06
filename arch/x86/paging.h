@@ -30,5 +30,7 @@ void init_paging();
 
 page_t *get_page(u32 address);
 
+void dbg_heap();
+
 
 #endif // PAGING_H
