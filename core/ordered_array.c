@@ -1,4 +1,5 @@
 #include <arch/x86/kheap.h>
+#include <arch/x86/io.h>
 
 #include "ordered_array.h"
 
@@ -71,4 +72,12 @@ void remove_ordered_array(u32 i, ordered_array_t *array)
 		++i;
 	}
 	--array->size;
+}
+
+
+void print_ordered_array(ordered_array_t *array, void (*p)(type_t))
+{
+	for (u32 i = 0; i < array->size; ++i)
+		p(lookup_ordered_array(i, array));
+	vga_writestring("--------------------\n");
 }

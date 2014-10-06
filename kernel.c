@@ -28,19 +28,22 @@ void kernel_main()
 	init_descriptor_tables();
 	init_paging();
 
-	// Test some allocations..
-	for (u32 i = 0; i < 20; ++i) {
-		u32 addr = 0;
-		u32* i = (u32*)kmalloc_p(1025 * 4, &addr);
-		*(i) = 33;
-		vga_writehex(*i);
-		vga_writestring(" @ ");
-		vga_writehex(addr);
-		vga_writestring(" @ ");
-		vga_writehexnl((u32)i);
+	u32 a = kmalloc(8);
+	u32 b = kmalloc(8);
 
-		kfree((u32)i);
-	}
+	//vga_writehexnl(a);
+	//vga_writehexnl(b);
+
+	kfree(a);
+	kfree(b);
+
+	u32 c = kmalloc(12);
+
+	vga_writehexnl(c);
+
+	kfree(c);
+
 }
+
 
 

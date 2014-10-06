@@ -31,4 +31,6 @@ type_t lookup_ordered_array(u32 i, ordered_array_t *array);
 
 void remove_ordered_array(u32 i, ordered_array_t *array);
 
+void print_ordered_array(ordered_array_t *array, void(*p)(type_t el));
+
 #endif // ORDERED_ARRAY_H

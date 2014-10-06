@@ -94,8 +94,12 @@ void initialise_frames()
 
 	memset(frames, 0, 4 * 128);
 	u32 addr = 0;
+	u32 cnt = 0;
 	while (addr < fin) {
 		set_frame(addr);
 		addr += 0x1000;
+		cnt++;
 	}
+
+	vga_writeintnl(cnt);
 }

@@ -80,9 +80,9 @@ static s32 find_smallest_hole(u32 size, u8 page_align, heap_t *heap)
 			s32 offset = 0;
 
 			if (((location + sizeof(header_t)) & 0xFFFFF000) != 0) {
-				offset = 0x1000 - (location
-						   + (sizeof(header_t)
-						      & 0x1000));
+				offset = 0x1000 - ((location
+						   + sizeof(header_t))
+						      & 0x1000);
 			}
 			s32 hole_size = (s32)header->size - offset;
 
@@ -105,10 +105,37 @@ static s8 header_t_less_than(void* a, void *b)
 	return ((header_t*)a)->size < ((header_t*)b)->size ? 1 : 0;
 }
 
+static void print_header(void *h)
+{
+	header_t *header = h;
+	vga_writestring("Addr: ");
+	vga_writehex((u32)header);
+	vga_writestring(" is hole: ");
+	vga_writeint(header->is_hole);
+	vga_writestring(" size: ");
+	vga_writeintnl(header->size);
+}
+
+static void print_heap(heap_t *heap)
+{
+	header_t *header = (header_t*)heap->start_address;
+
+	while ((u32)header < heap->end_address
+		&& header->magic == HEAP_MAGIC) {
+		print_header(header);
+
+		header = (header_t*)((u32)header + header->size);
+	}
+
+	vga_writestring("=================\n");
+}
+
 static void expand(u32 new_size, heap_t *heap)
 {
 	//TODO: check we don't expand beyond max address
 	new_size = align_4K(new_size);
+	vga_writestring("New size: ");
+	vga_writeintnl(new_size);
 
 	u32 old_size = heap->end_address - heap->start_address;
 	u32 i = old_size;
@@ -174,6 +201,8 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 	if (iterator == -1) {
 		u32 old_length = heap->end_address - heap->start_address;
 		u32 old_end_address = heap->end_address;
+
+		vga_writestring("Hole not found\n");
 
 		expand(old_length + new_size, heap);
 		u32 new_length = heap->end_address - heap->start_address;
@@ -287,6 +316,8 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		insert_ordered_array((void*)hole_header, &heap->index);
 	}
 
+	print_heap(heap);
+
 	return (void*)((u32)block_header + sizeof(header_t));
 }
 
@@ -311,6 +342,7 @@ void free(void *p, heap_t *heap)
 		header = test_footer->header;
 		header->size += cache_size;
 		to_add = 0;
+		vga_writestring("Unify left\n");
 	}
 
 	header_t *test_header = (header_t*)((u32)footer + sizeof(footer_t));
@@ -326,9 +358,10 @@ void free(void *p, heap_t *heap)
 		while ((iterator < heap->index.size) &&
 		       (lookup_ordered_array(iterator, &heap->index))
 				!= (void*)test_header)
-			iterator++;
+			++iterator;
 
 		remove_ordered_array(iterator, &heap->index);
+		vga_writestring("Unify right\n");
 	}
 
 	if ((u32)footer + sizeof(footer_t) == heap->end_address) {
@@ -347,7 +380,7 @@ void free(void *p, heap_t *heap)
 			while ((iterator < heap->index.size) &&
 				(lookup_ordered_array(iterator, &heap->index))
 					!= (void*)test_header)
-				iterator++;
+				++iterator;
 
 			if (iterator < heap->index.size)
 				remove_ordered_array(iterator, &heap->index);
@@ -356,4 +389,6 @@ void free(void *p, heap_t *heap)
 
 	if (to_add == 1)
 		insert_ordered_array((void*)header, &heap->index);
+
+	print_heap(heap);
 }
