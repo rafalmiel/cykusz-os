@@ -128,7 +128,9 @@ static void print_header(void *h)
 	vga_writestring(" size: ");
 	vga_writehex(header->size);
 	vga_writestring(" | footer->header: ");
-	vga_writehexnl((u32)((footer_t*)((u32)header + header->size - sizeof(footer_t)))->header);
+	vga_writehexnl((u32)((footer_t*)((u32)header
+					 + header->size
+					 - sizeof(footer_t)))->header);
 }
 
 static void print_heap(heap_t *heap)
@@ -364,6 +366,8 @@ void free(void *p, heap_t *heap)
 		header->size += test_header->size;
 		test_footer = (footer_t*)((u32)test_header + test_header->size
 					  - sizeof(footer_t));
+
+		prepare_footer(header);
 
 		footer = test_footer;
 

@@ -28,9 +28,9 @@ void kernel_main()
 	init_descriptor_tables();
 	init_paging();
 
-	u32 a = kmalloc(8);
-	u32 b = kmalloc(8);
-	u32 c = kmalloc(8);
+	u32 a = kmalloc_a(8);
+	u32 b = kmalloc_a(8);
+	//u32 c = kmalloc_a(8);
 //	u32 d = kmalloc(8);
 //	u32 e = kmalloc(8);
 
@@ -40,8 +40,8 @@ void kernel_main()
 	dbg_heap();
 	kfree(b);
 	dbg_heap();
-	kfree(c);
-	dbg_heap();
+	//kfree(c);
+	//dbg_heap();
 //	kfree(d);
 //	kfree(e);
 }
