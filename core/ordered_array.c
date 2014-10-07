@@ -81,3 +81,15 @@ void print_ordered_array(ordered_array_t *array, void (*p)(type_t))
 		p(lookup_ordered_array(i, array));
 	vga_writestring("--------------------\n");
 }
+
+
+void remove_ordered_array_by_val(type_t value, ordered_array_t *array)
+{
+	u32 iterator = 0;
+	while ((iterator < array->size)
+	       && (lookup_ordered_array(iterator, array)) != value)
+		++iterator;
+
+	if (iterator < array->size)
+		remove_ordered_array(iterator, array);
+}

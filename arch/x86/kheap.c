@@ -236,52 +236,76 @@ static header_t *prepare_heap_frame(u32 addr, u32 size, u8 is_hole)
 	return header;
 }
 
+static s32 find_last_hole_idx(heap_t *heap)
+{
+	s32 iterator = 0;
+	s32 idx = -1;
+	u32 value = 0x0;
+	while ((u32)iterator < heap->index.size) {
+		u32 tmp = (u32)lookup_ordered_array(iterator,
+						    &heap->index);
+
+		if (tmp > value) {
+			value = tmp;
+			idx = iterator;
+		}
+
+		++iterator;
+	}
+
+	return idx;
+}
+
+static void resize_block_by(header_t *header, s32 resize_by)
+{
+	header->size += resize_by;
+	prepare_footer(header);
+}
+
+static footer_t *get_footer_by_header(header_t *header)
+{
+	return (footer_t*)((u32)header + header->size - sizeof(footer_t));
+}
+
+static void *expand_and_alloc(heap_t *heap, u32 new_size, u8 page_align)
+{
+	u32 old_length = heap->end_address - heap->start_address;
+	u32 old_end_address = heap->end_address;
+
+	expand(old_length + new_size, heap);
+	u32 new_length = heap->end_address - heap->start_address;
+
+	s32 idx = find_last_hole_idx(heap);
+
+	if (idx == -1) {
+		header_t *header = prepare_heap_frame(old_end_address,
+						      new_length
+						      - old_length,
+						      1);
+
+		insert_ordered_array((void*)header, &heap->index);
+	} else {
+		header_t *header = lookup_ordered_array(idx,
+							&heap->index);
+		resize_block_by(header, new_length - old_length);
+	}
+
+	return alloc(new_size - sizeof(header_t) - sizeof(footer_t),
+		     page_align,
+		     heap);
+}
+
 void *alloc(u32 size, u8 page_align, heap_t *heap)
 {
 	u32 new_size = size + sizeof(header_t) + sizeof(footer_t);
 
 	s32 iterator = find_smallest_hole(new_size, page_align, heap);
 
+	/* We didn't find hole large enough, expand the heap and try allocating
+	 * again */
 	if (iterator == -1) {
-		u32 old_length = heap->end_address - heap->start_address;
-		u32 old_end_address = heap->end_address;
-
-		expand(old_length + new_size, heap);
-		u32 new_length = heap->end_address - heap->start_address;
-
-		iterator = 0;
-
-		s32 idx = -1;
-		u32 value = 0x0;
-		while ((u32)iterator < heap->index.size) {
-			u32 tmp = (u32)lookup_ordered_array(iterator,
-							    &heap->index);
-
-			if (tmp > value) {
-				value = tmp;
-				idx = iterator;
-			}
-
-			++iterator;
-		}
-
-		if (idx == -1) {
-
-			header_t *header = prepare_heap_frame(old_end_address,
-							      new_length
-							      - old_length,
-							      1);
-
-			insert_ordered_array((void*)header, &heap->index);
-		} else {
-			header_t *header = lookup_ordered_array(idx,
-								&heap->index);
-			header->size += new_length - old_length;
-
-			prepare_footer(header);
-		}
-
-		return alloc(size, page_align, heap);
+		/* Expands the heap and calls alloc recursively */
+		return expand_and_alloc(heap, new_size, page_align);
 	}
 
 	header_t *orig_hole_header =
@@ -295,6 +319,7 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		new_size = orig_hole_size;
 	}
 
+	/* Allocate at the page boundary */
 	if (page_align && orig_hole_pos & 0xFFFFF000) {
 		u32 new_location = orig_hole_pos + 0x1000
 				- (orig_hole_pos & 0xFFF)
@@ -311,8 +336,10 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		remove_ordered_array(iterator, &heap->index);
 	}
 
+	/* Create the block for the new allocation */
 	header_t *block_header = prepare_heap_frame(orig_hole_pos, new_size, 0);
 
+	/* Create new hole if we get enough space after allocated block */
 	if (orig_hole_size - new_size > 0) {
 		header_t *hole_header = prepare_header(orig_hole_pos
 						       + sizeof(header_t)
@@ -337,72 +364,48 @@ void free(void *p, heap_t *heap)
 		return;
 
 	header_t *header = (header_t*)((u32)p - sizeof(header_t));
-	footer_t *footer = (footer_t*)((u32)header + header->size
-				       - sizeof(footer_t));
+	footer_t *footer = get_footer_by_header(header);
 
 	header->is_hole = 1;
 
 	char to_add = 1;
 
-	vga_writestring("free: ");
-	vga_writehexnl((u32)header);
-
+	/* Merge block on the left, if it is also the hole */
 	footer_t *test_footer = (footer_t*)((u32)header - sizeof(footer_t));
 	if (test_footer->magic == HEAP_MAGIC
 	    && test_footer->header->is_hole == 1) {
 		u32 cache_size = header->size;
 		header = test_footer->header;
-		header->size += cache_size;
 
-		prepare_footer(header);
+		resize_block_by(header, cache_size);
+
 		to_add = 0;
-
-		vga_writehex((u32)header);
-		vga_writestring(" merge left\n");
 	}
 
+	/* Merge block on the right, if it is also the hole */
 	header_t *test_header = (header_t*)((u32)footer + sizeof(footer_t));
 	if (test_header->magic == HEAP_MAGIC && test_header->is_hole) {
-		header->size += test_header->size;
-		test_footer = (footer_t*)((u32)test_header + test_header->size
-					  - sizeof(footer_t));
+		resize_block_by(header, test_header->size);
 
-		prepare_footer(header);
+		footer = get_footer_by_header(header);
 
-		footer = test_footer;
-
-		u32 iterator = 0;
-
-		while ((iterator < heap->index.size) &&
-		       (lookup_ordered_array(iterator, &heap->index))
-				!= (void*)test_header)
-			++iterator;
-
-		remove_ordered_array(iterator, &heap->index);
-		vga_writehex((u32)header);
-		vga_writestring(" merge right\n");
+		remove_ordered_array_by_val(test_header, &heap->index);
 	}
 
+	/* Try contracting the heap if the hole is at the end of it */
 	if ((u32)footer + sizeof(footer_t) == heap->end_address) {
 		u32 old_length = heap->end_address - heap->start_address;
 		u32 new_length = contract((u32)header - heap->start_address,
 					  heap);
 
 		if (header->size - (old_length - new_length) > 0) {
-			header->size -= old_length - new_length;
-			prepare_footer(header);
+			resize_block_by(header, -(old_length - new_length));
 		} else {
-			u32 iterator = 0;
-			while ((iterator < heap->index.size) &&
-				(lookup_ordered_array(iterator, &heap->index))
-					!= (void*)test_header)
-				++iterator;
-
-			if (iterator < heap->index.size)
-				remove_ordered_array(iterator, &heap->index);
+			remove_ordered_array_by_val(test_header, &heap->index);
 		}
 	}
 
+	/* Add hole to the index if necessary */
 	if (to_add == 1)
 		insert_ordered_array((void*)header, &heap->index);
 }
