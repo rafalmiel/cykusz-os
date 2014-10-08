@@ -10,7 +10,7 @@
 
 typedef struct heap
 {
-	ordered_array_t index;
+	ordarr_t index;
 	u32 start_address;
 	u32 end_address;
 	u32 max_address;
@@ -31,9 +31,6 @@ void init_heap(heap_t *heap, u32 start, u32 end, u32 max,
 	       u8 supervisor,
 	       u8 readonly);
 
-void *alloc(u32 size, u8 page_align, heap_t *heap);
+void debug_heap();
 
-void free(void *p, heap_t *heap);
-
-void debug_heap(heap_t *heap);
 #endif // KHEAP_H

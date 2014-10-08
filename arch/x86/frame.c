@@ -55,7 +55,7 @@ static u32 first_frame()
 	return -1;
 }
 
-void alloc_frame(page_t *page)
+void frame_alloc(page_t *page)
 {
 	if (page->frame != 0) {
 		return;
@@ -76,7 +76,7 @@ void alloc_frame(page_t *page)
 
 }
 
-void free_frame(page_t *page)
+void frame_free(page_t *page)
 {
 	u32 frame;
 
@@ -88,7 +88,7 @@ void free_frame(page_t *page)
 	}
 }
 
-void initialise_frames()
+void init_frames()
 {
 	const u32 fin = ((u32)&__phys_end);
 

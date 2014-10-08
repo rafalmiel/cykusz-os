@@ -29,7 +29,7 @@ void kernel_main()
 	init_paging();
 
 
-	u32 a = kmalloc(1000000);
+	u32 a = kmalloc_a(1000000);
 	u32 b = kmalloc(8);
 
 	vga_writehexnl(a);
@@ -44,7 +44,7 @@ void kernel_main()
 
 	kfree(c);
 
-	dbg_heap();
+	debug_heap();
 }
 
 

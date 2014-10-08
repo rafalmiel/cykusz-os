@@ -4,10 +4,10 @@
 #include <core/common.h>
 #include "paging.h"
 
-void initialise_frames();
+void init_frames();
 
-void alloc_frame(page_t *page);
+void frame_alloc(page_t *page);
 
-void free_frame(page_t *page);
+void frame_free(page_t *page);
 
 #endif // FRAME_H

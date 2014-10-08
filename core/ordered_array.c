@@ -3,41 +3,41 @@
 
 #include "ordered_array.h"
 
-s8 standard_lessthan_predicate(type_t a, type_t b)
+s8 ordarr_lessthan_predicate(ordarr_type_t a, ordarr_type_t b)
 {
 	return (a < b) ? 1 : 0;
 }
 
-ordered_array_t create_ordered_array(u32 max_size,
-				     lessthan_predicate_t less_than)
+ordarr_t create_ordarr(u32 max_size,
+				     ordarr_lessthan_pred_t less_than)
 {
-	ordered_array_t ret;
-	ret.array = (void*)kmalloc(max_size * sizeof(type_t));
-	memset(ret.array, 0, max_size * sizeof(type_t));
+	ordarr_t ret;
+	ret.array = (void*)kmalloc(max_size * sizeof(ordarr_type_t));
+	memset(ret.array, 0, max_size * sizeof(ordarr_type_t));
 	ret.size = 0;
 	ret.max_size = max_size;
 	ret.less_than = less_than;
 	return ret;
 }
 
-ordered_array_t place_ordered_array(void *addr, u32 max_size,
-				    lessthan_predicate_t less_than)
+ordarr_t place_ordarr(void *addr, u32 max_size,
+				    ordarr_lessthan_pred_t less_than)
 {
-	ordered_array_t ret;
-	ret.array = (type_t*)addr;
-	memset(ret.array, 0, max_size * sizeof(type_t));
+	ordarr_t ret;
+	ret.array = (ordarr_type_t*)addr;
+	memset(ret.array, 0, max_size * sizeof(ordarr_type_t));
 	ret.size = 0;
 	ret.max_size = max_size;
 	ret.less_than = less_than;
 	return ret;
 }
 
-void destroy_ordered_array(ordered_array_t *array)
+void destroy_ordarr(ordarr_t *array)
 {
 	kfree((u32)array);
 }
 
-void insert_ordered_array(type_t item, ordered_array_t *array)
+void ordarr_insert(ordarr_type_t item, ordarr_t *array)
 {
 	u32 iterator = 0;
 	while (iterator < array->size
@@ -47,12 +47,12 @@ void insert_ordered_array(type_t item, ordered_array_t *array)
 	if (iterator == array->size)
 		array->array[array->size++] = item;
 	else {
-		type_t tmp = array->array[iterator];
+		ordarr_type_t tmp = array->array[iterator];
 		array->array[iterator] = item;
 
 		while (iterator < array->size) {
 			++iterator;
-			type_t tmp2 = array->array[iterator];
+			ordarr_type_t tmp2 = array->array[iterator];
 			array->array[iterator] = tmp;
 			tmp = tmp2;
 		}
@@ -60,12 +60,12 @@ void insert_ordered_array(type_t item, ordered_array_t *array)
 	}
 }
 
-type_t lookup_ordered_array(u32 i, ordered_array_t *array)
+ordarr_type_t ordarr_lookup(u32 i, ordarr_t *array)
 {
 	return array->array[i];
 }
 
-void remove_ordered_array(u32 i, ordered_array_t *array)
+void ordarr_remove(u32 i, ordarr_t *array)
 {
 	while (i < array->size) {
 		array->array[i] = array->array[i+1];
@@ -75,21 +75,21 @@ void remove_ordered_array(u32 i, ordered_array_t *array)
 }
 
 
-void print_ordered_array(ordered_array_t *array, void (*p)(type_t))
+void ordarr_print(ordarr_t *array, void (*p)(ordarr_type_t))
 {
 	for (u32 i = 0; i < array->size; ++i)
-		p(lookup_ordered_array(i, array));
+		p(ordarr_lookup(i, array));
 	vga_writestring("--------------------\n");
 }
 
 
-void remove_ordered_array_by_val(type_t value, ordered_array_t *array)
+void ordarr_remove_by_val(ordarr_type_t value, ordarr_t *array)
 {
 	u32 iterator = 0;
 	while ((iterator < array->size)
-	       && (lookup_ordered_array(iterator, array)) != value)
+	       && (ordarr_lookup(iterator, array)) != value)
 		++iterator;
 
 	if (iterator < array->size)
-		remove_ordered_array(iterator, array);
+		ordarr_remove(iterator, array);
 }

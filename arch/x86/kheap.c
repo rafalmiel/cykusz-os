@@ -18,7 +18,8 @@ typedef struct
 
 static heap_t *s_heap = 0;
 
-void *alloc(u32 size, u8 page_align, heap_t *heap);
+static void *alloc(u32 size, u8 page_align, heap_t *heap);
+static void free(void *p, heap_t *heap);
 
 static inline u32 align(u32 addr, u32 to)
 {
@@ -40,53 +41,12 @@ static inline u32 align_32B(u32 addr)
 	return align(addr, 0x20);
 }
 
-u32 kmalloc_int(u32 size, int align, u32 *phys)
-{
-	void *addr = alloc(size, (u8)align, s_heap);
-	if (phys != 0) {
-		page_t *page = get_page((u32)addr);
-		*phys = page->frame * 0x1000 + ((u32)addr & 0xFFF);
-	}
-	return (u32)addr;
-}
-
-u32 kmalloc_a(u32 size)
-{
-	return kmalloc_int(size, 1, 0);
-}
-
-u32 kmalloc_p(u32 size, u32 *phys)
-{
-	return kmalloc_int(size, 0, phys);
-}
-
-u32 kmalloc_ap(u32 size, u32 *phys)
-{
-	return kmalloc_int(size, 1, phys);
-}
-
-u32 kmalloc(u32 size)
-{
-	return kmalloc_int(size, 0, 0);
-}
-
-void kfree(u32 addr)
-{
-	free((void*)addr, s_heap);
-}
-
-void heap_set_current(heap_t *heap)
-{
-	s_heap = heap;
-}
-
 static s32 find_smallest_hole(u32 size, u8 page_align, heap_t *heap)
 {
 	u32 iterator = 0;
 	while (iterator < heap->index.size) {
-		header_t *header =
-				(header_t*)lookup_ordered_array(iterator,
-								&heap->index);
+		header_t *header = (header_t*)ordarr_lookup(iterator,
+							    &heap->index);
 
 		if (page_align > 0) {
 			u32 location = (u32) header;
@@ -156,7 +116,7 @@ static void expand(u32 new_size, heap_t *heap)
 	u32 i = old_size;
 
 	while (i < new_size) {
-		alloc_frame(get_page(heap->start_address + i));
+		frame_alloc(page_get(heap->start_address + i));
 		i += 0x1000;
 	}
 
@@ -174,36 +134,12 @@ static u32 contract(u32 new_size, heap_t *heap)
 	u32 i = old_size - 0x1000;
 
 	while (new_size < i) {
-		free_frame(get_page(heap->start_address + i));
+		frame_free(page_get(heap->start_address + i));
 		i -= 0x1000;
 	}
 
 	heap->end_address = heap->start_address + new_size;
 	return new_size;
-}
-
-void init_heap(heap_t *heap, u32 start, u32 end, u32 max, u8 supervisor,
-	       u8 readonly)
-{
-	heap->index = place_ordered_array((void*)start, HEAP_INDEX_SIZE,
-					  &header_t_less_than);
-
-	start += sizeof(type_t) * HEAP_INDEX_SIZE;
-
-	start = align_4K(start);
-
-	heap->start_address = start;
-	heap->end_address = end;
-	heap->max_address = max;
-	heap->supervisor = supervisor;
-	heap->readonly = readonly;
-
-	header_t *hole = (header_t*) start;
-	hole->size = end - start;
-	hole->magic = HEAP_MAGIC;
-	hole->is_hole = 1;
-
-	insert_ordered_array((void*)hole, &heap->index);
 }
 
 static header_t *prepare_header(u32 addr, u32 size, u8 is_hole)
@@ -242,8 +178,7 @@ static s32 find_last_hole_idx(heap_t *heap)
 	s32 idx = -1;
 	u32 value = 0x0;
 	while ((u32)iterator < heap->index.size) {
-		u32 tmp = (u32)lookup_ordered_array(iterator,
-						    &heap->index);
+		u32 tmp = (u32)ordarr_lookup(iterator, &heap->index);
 
 		if (tmp > value) {
 			value = tmp;
@@ -283,10 +218,9 @@ static void *expand_and_alloc(heap_t *heap, u32 new_size, u8 page_align)
 						      - old_length,
 						      1);
 
-		insert_ordered_array((void*)header, &heap->index);
+		ordarr_insert((void*)header, &heap->index);
 	} else {
-		header_t *header = lookup_ordered_array(idx,
-							&heap->index);
+		header_t *header = ordarr_lookup(idx, &heap->index);
 		resize_block_by(header, new_length - old_length);
 	}
 
@@ -295,7 +229,7 @@ static void *expand_and_alloc(heap_t *heap, u32 new_size, u8 page_align)
 		     heap);
 }
 
-void *alloc(u32 size, u8 page_align, heap_t *heap)
+static void *alloc(u32 size, u8 page_align, heap_t *heap)
 {
 	u32 new_size = size + sizeof(header_t) + sizeof(footer_t);
 
@@ -308,9 +242,8 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		return expand_and_alloc(heap, new_size, page_align);
 	}
 
-	header_t *orig_hole_header =
-			(header_t*)lookup_ordered_array(iterator,
-							&heap->index);
+	header_t *orig_hole_header = (header_t*)ordarr_lookup(iterator,
+							      &heap->index);
 	u32 orig_hole_pos = (u32)orig_hole_header;
 	u32 orig_hole_size = orig_hole_header->size;
 
@@ -333,7 +266,7 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 		orig_hole_pos = new_location;
 		orig_hole_size = orig_hole_size - hole_header->size;
 	} else {
-		remove_ordered_array(iterator, &heap->index);
+		ordarr_remove(iterator, &heap->index);
 	}
 
 	/* Create the block for the new allocation */
@@ -341,24 +274,26 @@ void *alloc(u32 size, u8 page_align, heap_t *heap)
 
 	/* Create new hole if we get enough space after allocated block */
 	if (orig_hole_size - new_size > 0) {
-		header_t *hole_header = prepare_header(orig_hole_pos
-						       + sizeof(header_t)
-						       + size
-						       + sizeof(footer_t),
-						       orig_hole_size - new_size,
-						       1);
-		if ((u32)hole_header + hole_header->size < heap->end_address) {
-			prepare_footer(hole_header);
+		header_t *hole_hdr = prepare_header(orig_hole_pos
+						    + sizeof(header_t)
+						    + size
+						    + sizeof(footer_t),
+						    orig_hole_size - new_size,
+						    1);
+
+		/* Create footer only if hole is not at the end address */
+		if ((u32)hole_hdr + hole_hdr->size < heap->end_address) {
+			prepare_footer(hole_hdr);
 		}
 
-		insert_ordered_array((void*)hole_header, &heap->index);
+		ordarr_insert((void*)hole_hdr, &heap->index);
 	}
 
 	return (void*)((u32)block_header + sizeof(header_t));
 }
 
 
-void free(void *p, heap_t *heap)
+static void free(void *p, heap_t *heap)
 {
 	if (p == 0)
 		return;
@@ -389,7 +324,7 @@ void free(void *p, heap_t *heap)
 
 		footer = get_footer_by_header(header);
 
-		remove_ordered_array_by_val(test_header, &heap->index);
+		ordarr_remove_by_val(test_header, &heap->index);
 	}
 
 	/* Try contracting the heap if the hole is at the end of it */
@@ -401,17 +336,80 @@ void free(void *p, heap_t *heap)
 		if (header->size - (old_length - new_length) > 0) {
 			resize_block_by(header, -(old_length - new_length));
 		} else {
-			remove_ordered_array_by_val(test_header, &heap->index);
+			ordarr_remove_by_val(test_header, &heap->index);
 		}
 	}
 
 	/* Add hole to the index if necessary */
 	if (to_add == 1)
-		insert_ordered_array((void*)header, &heap->index);
+		ordarr_insert((void*)header, &heap->index);
 }
 
-
-void debug_heap(heap_t *heap)
+u32 kmalloc_int(u32 size, int align, u32 *phys)
 {
-	print_heap(heap);
+	void *addr = alloc(size, (u8)align, s_heap);
+	if (phys != 0) {
+		page_t *page = page_get((u32)addr);
+		*phys = page->frame * 0x1000 + ((u32)addr & 0xFFF);
+	}
+	return (u32)addr;
+}
+
+u32 kmalloc_a(u32 size)
+{
+	return kmalloc_int(size, 1, 0);
+}
+
+u32 kmalloc_p(u32 size, u32 *phys)
+{
+	return kmalloc_int(size, 0, phys);
+}
+
+u32 kmalloc_ap(u32 size, u32 *phys)
+{
+	return kmalloc_int(size, 1, phys);
+}
+
+u32 kmalloc(u32 size)
+{
+	return kmalloc_int(size, 0, 0);
+}
+
+void kfree(u32 addr)
+{
+	free((void*)addr, s_heap);
+}
+
+void heap_set_current(heap_t *heap)
+{
+	s_heap = heap;
+}
+
+void init_heap(heap_t *heap, u32 start, u32 end, u32 max, u8 supervisor,
+	       u8 readonly)
+{
+	heap->index = place_ordarr((void*)start, HEAP_INDEX_SIZE,
+					  &header_t_less_than);
+
+	start += sizeof(ordarr_type_t) * HEAP_INDEX_SIZE;
+
+	start = align_4K(start);
+
+	heap->start_address = start;
+	heap->end_address = end;
+	heap->max_address = max;
+	heap->supervisor = supervisor;
+	heap->readonly = readonly;
+
+	header_t *hole = (header_t*) start;
+	hole->size = end - start;
+	hole->magic = HEAP_MAGIC;
+	hole->is_hole = 1;
+
+	ordarr_insert((void*)hole, &heap->index);
+}
+
+void debug_heap()
+{
+	print_heap(s_heap);
 }

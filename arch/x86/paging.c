@@ -46,7 +46,7 @@ static void page_fault(registers_t *regs)
 
 void init_paging()
 {
-	initialise_frames();
+	init_frames();
 
 	memset(&kernel_pd, 0, sizeof kernel_pd);
 
@@ -60,7 +60,7 @@ void init_paging()
 	 * Allocate physical memory for initial heap size
 	 */
 	for (u32 i = 0xD0000000; i < 0xD0090000; i += 0x1000)
-		alloc_frame(get_page(i));
+		frame_alloc(page_get(i));
 
 	/**
 	 * Max kernel heap size is 256MB
@@ -72,7 +72,7 @@ void init_paging()
 	register_interrupt_handler(14, page_fault);
 }
 
-page_t *get_page(u32 address)
+page_t *page_get(u32 address)
 {
 	address /= 0x1000;
 
@@ -86,10 +86,4 @@ page_t *get_page(u32 address)
 	} else {
 		return 0;
 	}
-}
-
-
-void dbg_heap()
-{
-	debug_heap(&heap);
 }

@@ -28,9 +28,7 @@ typedef struct page_directory
 
 void init_paging();
 
-page_t *get_page(u32 address);
-
-void dbg_heap();
+page_t *page_get(u32 address);
 
 
 #endif // PAGING_H
