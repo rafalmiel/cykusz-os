@@ -45,7 +45,6 @@ static void page_fault(registers_t *regs)
 
 	vga_writestring("\n");
 
-
 	asm volatile("hlt");
 }
 
@@ -76,9 +75,6 @@ void init_paging(struct multiboot *multiboot)
 	/**
 	 * Max kernel heap size is 256MB
 	 */
-
-	vga_writestring("Heap addr: ");
-	vga_writehexnl((u32)&heap);
 	init_heap(&heap, 0xD0000000, 0xD0090000, 0xE0000000, 0, 0);
 
 	heap_set_current(&heap);
@@ -111,9 +107,6 @@ void paging_identity_map_to(u32 phys_address)
 		u32 addr = s_current_end + 0xC0000000;
 
 		page_t *page = page_get(addr);
-
-		vga_writestring("Identity mapping of: ");
-		vga_writehexnl(s_current_end);
 
 		frame_alloc_at(s_current_end, page);
 	}

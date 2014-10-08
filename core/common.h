@@ -12,6 +12,9 @@ typedef int32_t s32;
 typedef uint32_t u32;
 
 size_t strlen(const char* str);
+s32 strcmp(const char *s1, const char *s2);
+char *strcpy(char *dest, const char *src);
+char *strcat(char *dest, const char *src);
 void *memset(void *ptr, int value, u32 size);
 void *memcpy (void *destination, const void *source, u32 num);
 
