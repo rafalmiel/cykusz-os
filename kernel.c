@@ -17,17 +17,20 @@
 #include "arch/x86/timer.h"
 #include "arch/x86/kheap.h"
 #include "arch/x86/paging.h"
+#include "arch/x86/multiboot.h"
 
 #if defined(__cplusplus)
 extern "C"
 #endif
 
-void kernel_main()
+void kernel_main(struct multiboot *multiboot)
 {
 	init_vga();
 	init_descriptor_tables();
 	init_paging();
 
+	vga_writestring("Multiboot addr: ");
+	vga_writehexnl((u32)multiboot);
 
 	u32 a = kmalloc_a(1000000);
 	u32 b = kmalloc(8);

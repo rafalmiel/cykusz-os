@@ -115,6 +115,9 @@ StartInHigherHalf:
 	invlpg [0]
 
 	mov esp, stack+STACKSIZE			; set up the stack
+
+	add ebx, KERNEL_VIRTUAL_BASE			; set up multiboot struct ptr
+	push ebx
 	call  kernel_main				; call kernel proper
 
 .hang:
