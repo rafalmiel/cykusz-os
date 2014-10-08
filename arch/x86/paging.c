@@ -10,6 +10,10 @@ static page_directory_t kernel_pd;
 
 static heap_t heap;
 
+extern u32 __phys_end;
+
+static u32 s_current_end = (u32)&__phys_end;
+
 static void page_fault(registers_t *regs)
 {
 	u32 faulting_address;
@@ -41,10 +45,11 @@ static void page_fault(registers_t *regs)
 
 	vga_writestring("\n");
 
+
 	asm volatile("hlt");
 }
 
-void init_paging()
+void init_paging(struct multiboot *multiboot)
 {
 	init_frames();
 
@@ -56,6 +61,12 @@ void init_paging()
 		kernel_pd.tables[768 + i] = &BootPageEntry + i;
 	}
 
+	/* Identity mapping of initrd image */
+	if (multiboot->mods_count > 0) {
+		paging_identity_map_to(multiboot->mods_addr + 4);
+		paging_identity_map_to(*(u32*)(multiboot->mods_addr + 0xC0000000 + 4));
+	}
+
 	/**
 	 * Allocate physical memory for initial heap size
 	 */
@@ -65,6 +76,9 @@ void init_paging()
 	/**
 	 * Max kernel heap size is 256MB
 	 */
+
+	vga_writestring("Heap addr: ");
+	vga_writehexnl((u32)&heap);
 	init_heap(&heap, 0xD0000000, 0xD0090000, 0xE0000000, 0, 0);
 
 	heap_set_current(&heap);
@@ -85,5 +99,22 @@ page_t *page_get(u32 address)
 		return &kernel_pd.tables[table_idx]->pages[address % 1024];
 	} else {
 		return 0;
+	}
+}
+
+
+void paging_identity_map_to(u32 phys_address)
+{
+	s_current_end = align_4K(s_current_end);
+
+	for (; s_current_end < phys_address; s_current_end += 0x1000) {
+		u32 addr = s_current_end + 0xC0000000;
+
+		page_t *page = page_get(addr);
+
+		vga_writestring("Identity mapping of: ");
+		vga_writehexnl(s_current_end);
+
+		frame_alloc_at(s_current_end, page);
 	}
 }

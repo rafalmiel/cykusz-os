@@ -15,5 +15,5 @@ i686-elf-gcc -c arch/x86/frame.c -o frame.o $flags
 i686-elf-gcc -c core/common.c -o common.o $flags
 i686-elf-gcc -c core/ordered_array.c -o ordered_array.o $flags
 i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -g -nostdlib boot.o kernel.o io.o common.o ordered_array.o gdt.o descriptor_tables.o interrupt.o isr.o timer.o kheap.o paging.o frame.o -lgcc
-qemu-system-i386 -kernel myos.bin
+qemu-system-i386 -kernel myos.bin -initrd LICENSE
 

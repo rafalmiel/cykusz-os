@@ -2,6 +2,7 @@
 #define PAGING_H
 
 #include <core/common.h>
+#include "multiboot.h"
 #include "isr.h"
 
 typedef struct page
@@ -26,9 +27,11 @@ typedef struct page_directory
 	u32 *tablesPhysical;		// Page directory with ptrs to entries
 } page_directory_t;
 
-void init_paging();
+void init_paging(struct multiboot *multiboot);
 
 page_t *page_get(u32 address);
+
+void paging_identity_map_to(u32 phys_address);
 
 
 #endif // PAGING_H

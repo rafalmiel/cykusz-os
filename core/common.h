@@ -15,6 +15,26 @@ size_t strlen(const char* str);
 void *memset(void *ptr, int value, u32 size);
 void *memcpy (void *destination, const void *source, u32 num);
 
+static inline u32 align(u32 addr, u32 to)
+{
+	if (addr & (to - 1)) {
+		addr &= ~(to - 1);
+		addr += to;
+	}
+
+	return addr;
+}
+
+static inline u32 align_4K(u32 addr)
+{
+	return align(addr, 0x1000);
+}
+
+static inline u32 align_32B(u32 addr)
+{
+	return align(addr, 0x20);
+}
+
 static inline void outb(u16 port, u8 val)
 {
 	asm volatile ( "outb %0, %1"

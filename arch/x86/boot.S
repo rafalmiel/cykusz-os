@@ -77,7 +77,7 @@ fill_page_entry:
 	push edx
 
 	mov edx, BootPageEntry - KERNEL_VIRTUAL_BASE
-	mov ebx, __end - KERNEL_VIRTUAL_BASE
+	mov ebx, __phys_end
 	mov ecx, 0
 	mov eax, 0x7					; Flags
 fill_page_entry_loop:

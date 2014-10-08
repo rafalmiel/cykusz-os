@@ -23,31 +23,24 @@
 extern "C"
 #endif
 
+extern u32 __end;
+
 void kernel_main(struct multiboot *multiboot)
 {
 	init_vga();
+
 	init_descriptor_tables();
-	init_paging();
 
-	vga_writestring("Multiboot addr: ");
-	vga_writehexnl((u32)multiboot);
+	init_paging(multiboot);
 
-	u32 a = kmalloc_a(1000000);
-	u32 b = kmalloc(8);
+	if (multiboot->mods_count > 0) {
+		u32 initrd_loc = *(u32*)(multiboot->mods_addr + 0xC0000000);
 
-	vga_writehexnl(a);
-	vga_writehexnl(b);
+		vga_writehexnl(initrd_loc);
 
-	kfree(a);
-	kfree(b);
+		vga_writehexnl(*(u32*)(initrd_loc + 0xC0000000 ));
+	}
 
-	u32 c = kmalloc(12);
-
-	vga_writehexnl(c);
-
-	kfree(c);
-
-	debug_heap();
 }
 
 

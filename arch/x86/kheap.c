@@ -21,26 +21,6 @@ static heap_t *s_heap = 0;
 static void *alloc(u32 size, u8 page_align, heap_t *heap);
 static void free(void *p, heap_t *heap);
 
-static inline u32 align(u32 addr, u32 to)
-{
-	if (addr & (to - 1)) {
-		addr &= ~(to - 1);
-		addr += to;
-	}
-
-	return addr;
-}
-
-static inline u32 align_4K(u32 addr)
-{
-	return align(addr, 0x1000);
-}
-
-static inline u32 align_32B(u32 addr)
-{
-	return align(addr, 0x20);
-}
-
 static s32 find_smallest_hole(u32 size, u8 page_align, heap_t *heap)
 {
 	u32 iterator = 0;

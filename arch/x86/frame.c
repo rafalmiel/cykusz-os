@@ -27,7 +27,6 @@ static void clear_frame(u32 frame_addr)
 	frames[idx] &= ~(0x1 << off);
 }
 
-#if 0 //unused for now
 static u32 test_frame(u32 frame_addr)
 {
 	u32 frame = frame_addr / 0x1000;
@@ -35,7 +34,6 @@ static u32 test_frame(u32 frame_addr)
 	u32 off = OFFSET_FROM_BIT(frame);
 	return (frames[idx] & (0x1 << off));
 }
-#endif
 
 static u32 first_frame()
 {
@@ -99,5 +97,18 @@ void init_frames()
 		set_frame(addr);
 		addr += 0x1000;
 		cnt++;
+	}
+}
+
+
+void frame_alloc_at(u32 phys_addr, page_t *page)
+{
+	if (test_frame(phys_addr) == 0) {
+		set_frame(phys_addr);
+
+		page->present = 1;
+		page->rw = 1;
+		page->user = 1;
+		page->frame = phys_addr / 0x1000;
 	}
 }

@@ -14,6 +14,8 @@ void isr_handler(registers_t *reg)
 		vga_writestring("unhandled interrupt: ");
 		vga_writeint(reg->int_no);
 		vga_writestring("\n");
+
+		asm volatile("hlt");
 	}
 
 }
