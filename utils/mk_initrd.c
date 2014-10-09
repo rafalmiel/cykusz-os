@@ -173,8 +173,6 @@ static bfs_file_t *open_bfs(int argc, char *argv[])
 
 	prepare_standard_dirents(bfs);
 
-	ftruncate(fileno(bfs->file), bfs->superblock.size);
-
 	return bfs;
 }
 
@@ -202,11 +200,8 @@ static int32_t write_file_inode(bfs_file_t *bfs, off_t size)
 	bfs_inode_t inode;
 
 	inode.inode = bfs->cur_inode++;
-	inode.first_block = bfs->data_start_block + bfs->cur_datablock_cnt - 1;
+	inode.first_block = bfs->data_start_block + bfs->cur_datablock_cnt;
 	inode.last_block = inode.first_block + block_count - 1;
-
-	bfs->cur_datablock_cnt += block_count;
-
 	inode.offset_to_eof = inode.first_block * BLOCK_SIZE + size;
 	inode.attributes = BFS_ATTR_FILE;
 	inode.mode = 0b111111111;
@@ -218,8 +213,9 @@ static int32_t write_file_inode(bfs_file_t *bfs, off_t size)
 	write_at(bfs, &inode, sizeof(bfs_inode_t),
 		 BLOCK_SIZE + bfs->cur_inode_cnt * sizeof(bfs_inode_t));
 
+	/* Update metadata values */
+	bfs->cur_datablock_cnt += block_count;
 	bfs->cur_inode_cnt++;
-
 	bfs->superblock.size += al_size;
 
 	return inode.inode;
@@ -228,8 +224,6 @@ static int32_t write_file_inode(bfs_file_t *bfs, off_t size)
 static void write_file_contents(bfs_file_t *bfs, void *data, off_t size,
 				const char *filename)
 {
-	int block_count = get_block_count(size);
-
 	write_at(bfs, data, size,
 		 bfs->data_start_block * BLOCK_SIZE
 		 + BLOCK_SIZE * bfs->cur_datablock_cnt);
@@ -242,8 +236,6 @@ static void write_file_contents(bfs_file_t *bfs, void *data, off_t size,
 	int32_t inode = write_file_inode(bfs, size);
 
 	add_dirent(bfs, inode, filename);
-
-	bfs->cur_datablock_cnt += block_count;
 }
 
 static void write_file(bfs_file_t *bfs, const char *filename)
