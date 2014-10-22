@@ -1,0 +1,2 @@
+ASM		= nasm
+ASM_FLAGS	= -felf

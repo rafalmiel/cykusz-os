@@ -1,7 +1,7 @@
 #include <arch/x86/kheap.h>
-#include <arch/x86/io.h>
+#include <core/io.h>
 
-#include "ordered_array.h"
+#include <core/ordered_array.h>
 
 s8 ordarr_lessthan_predicate(ordarr_type_t a, ordarr_type_t b)
 {

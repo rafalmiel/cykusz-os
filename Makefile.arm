@@ -1,0 +1,2 @@
+ASM		= $(CROSS_COMPILE)-as
+ASM_FLAGS	=

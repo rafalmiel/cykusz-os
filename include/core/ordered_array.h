@@ -1,7 +1,7 @@
 #ifndef ORDERED_ARRAY_H
 #define ORDERED_ARRAY_H
 
-#include "common.h"
+#include <core/common.h>
 
 typedef void* ordarr_type_t;
 

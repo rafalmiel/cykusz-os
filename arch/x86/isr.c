@@ -1,7 +1,7 @@
 #include <core/common.h>
 
 #include "isr.h"
-#include "io.h"
+#include <core/io.h>
 
 isr_t interrupt_handlers[256];
 

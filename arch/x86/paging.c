@@ -1,5 +1,5 @@
 #include "paging.h"
-#include "io.h"
+#include <core/io.h>
 #include "kheap.h"
 #include "frame.h"
 
