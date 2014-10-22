@@ -50,6 +50,8 @@ static void page_fault(registers_t *regs)
 
 void init_paging(struct multiboot *multiboot)
 {
+	register_interrupt_handler(14, page_fault);
+
 	init_frames();
 
 	memset(&kernel_pd, 0, sizeof kernel_pd);
@@ -63,7 +65,10 @@ void init_paging(struct multiboot *multiboot)
 	/* Identity mapping of initrd image */
 	if (multiboot->mods_count > 0) {
 		paging_identity_map_to(multiboot->mods_addr + 4);
-		paging_identity_map_to(*(u32*)(multiboot->mods_addr + 0xC0000000 + 4));
+		paging_identity_map_to(*(u32*)(multiboot->mods_addr
+					       + 0xC0000000
+					       + 4)
+				       );
 	}
 
 	/**
@@ -78,8 +83,6 @@ void init_paging(struct multiboot *multiboot)
 	init_heap(&heap, 0xD0000000, 0xD0090000, 0xE0000000, 0, 0);
 
 	heap_set_current(&heap);
-
-	register_interrupt_handler(14, page_fault);
 }
 
 page_t *page_get(u32 address)
