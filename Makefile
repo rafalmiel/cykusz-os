@@ -8,10 +8,13 @@ LD_FLAGS = -ffreestanding -O2 -g -nostdlib
 
 BUILD = build/
 
-PROJ_DIRS := . core arch/x86
+PROJ_DIRS := . \
+	     core \
+	     arch/x86
 
 C_SOURCES := $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.c")
 ASM_SOURCES := $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.S")
+
 C_OBJS := $(patsubst %.c,%.o,$(C_SOURCES))
 ASM_OBJS := $(patsubst %.S,%.o,$(ASM_SOURCES))
 
@@ -21,16 +24,22 @@ LINKER = linker.ld
 
 all: $(OUT)
 
-$(OUT): $(ASM_OBJS) $(C_OBJS)
-	$(CROSS_COMPILE)-gcc -T $(LINKER) -o $(OUT) $(LD_FLAGS) $(ASM_OBJS) $(C_OBJS) -lgcc
-
 -include $(C_DEPS)
 
-%.o: %.S
-	$(ASM) -felf $< -o $@
+$(OUT): $(ASM_OBJS) $(C_OBJS)
+	@$(CROSS_COMPILE)-gcc -T $(LINKER) -o $(OUT) $(LD_FLAGS) $(ASM_OBJS) $(C_OBJS) -lgcc
+	@echo LD $(OUT)
 
-%.o: %.c
-	$(CROSS_COMPILE)-gcc $(FLAGS) -MMD -MP -c $< -o $@
+%.o: %.S Makefile
+	@$(ASM) -felf $< -o $@
+	@echo nasm $<
+
+%.o: %.c Makefile
+	@$(CROSS_COMPILE)-gcc $(FLAGS) -MMD -MP -c $< -o $@
+	@echo CC $<
+
+run: all
+	qemu-system-i386 -kernel myos.bin -initrd LICENSE
 
 clean:
 	-rm -rf $(ASM_OBJS)
