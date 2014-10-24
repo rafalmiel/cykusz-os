@@ -3,15 +3,12 @@ ARCH		?= x86
 
 include Makefile.$(ARCH)
 
-FLAGS		= -std=gnu99 -ffreestanding -g -O0 -Wall -Wextra -I. -Iinclude
+FLAGS		= -std=gnu99 -ffreestanding -g -O0 -Wall -Wextra -I. -Iinclude -D__arch_$(ARCH)
 LD_FLAGS	= -ffreestanding -O2 -g -nostdlib
 
 PROJ_DIRS	:= . \
+		   core \
 		   arch/$(ARCH)
-
-ifeq ($(ARCH),x86)
-	PROJ_DIRS += core
-endif
 
 C_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.c")
 ASM_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.S")
@@ -38,7 +35,7 @@ Makefile : Makefile.$(ARCH)
 
 %.o: %.c Makefile
 	@$(CROSS_COMPILE)-gcc $(FLAGS) -MMD -MP -c $< -o $@
-	@echo -e "\e[1;33mCC $<\e[00m"
+	@echo -e "\e[1;33mCC $(FLAGS) $<\e[00m"
 
 run: all
 	qemu-system-i386 -kernel myos.bin -initrd LICENSE
