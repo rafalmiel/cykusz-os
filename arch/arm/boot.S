@@ -1,18 +1,17 @@
 .section .init
-.global _start
-.global arm_kernel_main
+.globl _start
 
-start:
+_start:
+	ldr r0, =0x20200000
 
-b main
+	mov r1,#1
+	lsl r1,#21
+	str r1,[r0,#16]
 
-.section .text
+	mov r1,#1
+	lsl r1,#15
+	str r1,[r0,#32]
 
-main:
-	mov sp, #0x8000
-	ldr r5, =arm_kernel_main
-	blx r5
 
-halt:
-	wfe
-	b halt
+loop$:
+	b loop$

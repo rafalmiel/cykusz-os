@@ -1,9 +1,24 @@
-#include "mmio.h"
+#include <stdint.h>
+
 #include "uart.h"
 
-void arm_kernel_main()
-{
-	uart_init();
+#define UNUSED(x) (void)(x)
 
-	uart_puts("Hello world\n");
+const char hello[] = "\r\nHello World\r\n";
+const char halting[] = "\r\n*** system halting ***";
+
+// kernel main function, it all begins here
+void arm_kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) {
+    UNUSED(r0);
+    UNUSED(r1);
+    UNUSED(atags);
+
+    uart_init();
+
+    uart_puts(hello);
+
+    // Wait a bit
+    for(volatile int i = 0; i < 10000000; ++i) { }
+
+    uart_puts(halting);
 }
