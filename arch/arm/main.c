@@ -1,9 +1,7 @@
 #include <stdint.h>
 
+#include "gpio.h"
 #include "uart.h"
-
-extern void led_on();
-extern void led_off();
 
 static void sleep()
 {
@@ -16,10 +14,15 @@ void arm_kernel_main(void)
 {
 	kernel_main();
 
+	gpio_actled_select();
+	gpio_pwrled_select();
+
 	for (;;) {
-		led_on();
+		gpio_actled_on();
+		gpio_pwrled_off();
 		sleep();
-		led_off();
+		gpio_actled_off();
+		gpio_pwrled_on();
 		sleep();
 	}
 }

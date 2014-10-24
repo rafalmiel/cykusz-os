@@ -14,6 +14,8 @@ void uart_init();
  */
 void uart_putc(u8 byte);
 
+u8 uart_getc();
+
 /*
  * print a string to the UART one character at a time
  * const char *str: 0-terminated string

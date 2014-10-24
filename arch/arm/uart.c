@@ -1,13 +1,10 @@
 #include <stdint.h>
 #include "mmio.h"
 #include "uart.h"
+#include "gpio.h"
 
-enum {
-	// The GPIO registers base address.
-	GPIO_BASE = 0x20200000,
-
-	// The offsets for reach register.
-
+enum
+{
 	// Controls actuation of pull up/down to ALL GPIO pins.
 	GPPUD = (GPIO_BASE + 0x94),
 
@@ -45,7 +42,7 @@ enum {
  * This just loops <delay> times in a way that the compiler
  * wont optimize away.
  */
-static void delay(int32_t count) {
+static void delay(u32 count) {
 	asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
 	     : : [count]"r"(count) : "cc");
 }
@@ -98,14 +95,25 @@ void uart_init() {
  * Transmit a byte via UART0.
  * uint8_t Byte: byte to send.
  */
-void uart_putc(uint8_t byte) {
+void uart_putc(u8 byte) {
 	// wait for UART to become ready to transmit
 	while (1) {
-	if (!(mmio_read(UART0_FR) & (1 << 5))) {
-	    break;
-	}
+		if (!(mmio_read(UART0_FR) & (1 << 5))) {
+			break;
+		}
 	}
 	mmio_write(UART0_DR, byte);
+}
+
+u8 uart_getc()
+{
+	// wait for UART to have recieved something
+	while(1) {
+	if (!(mmio_read(UART0_FR) & (1 << 4))) {
+		break;
+		}
+	}
+	return mmio_read(UART0_DR);
 }
 
 /*
@@ -114,6 +122,6 @@ void uart_putc(uint8_t byte) {
  */
 void uart_puts(const char *str) {
 	while (*str) {
-	uart_putc(*str++);
+		uart_putc(*str++);
 	}
 }
