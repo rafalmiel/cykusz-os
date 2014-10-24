@@ -1,4 +1,5 @@
 #include <core/io.h>
+#include "vga.h"
 
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
@@ -199,4 +200,14 @@ void vga_writehexnl(u32 val)
 {
 	vga_writehex(val);
 	vga_writestring("\n");
+}
+
+void init_output()
+{
+	init_vga();
+}
+
+void kprint(const char *str)
+{
+	vga_writestring(str);
 }

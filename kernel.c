@@ -4,21 +4,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
-//#include <core/io.h>
-//#include "arch/x86/descriptor_tables.h"
-//#include "arch/x86/timer.h"
-//#include "arch/x86/kheap.h"
-//#include "arch/x86/paging.h"
-//#include "arch/x86/multiboot.h"
+#include <core/io.h>
 
 #if defined(__cplusplus)
 extern "C"
 #endif
 
-extern uint32_t __end;
-
 void kernel_main(/*struct multiboot *multiboot*/)
 {
+	init_output();
+
+	kprint("\n");
+	kprint("Hello world kernel!\n");
 	//init_vga();
 
 	/*init_descriptor_tables();

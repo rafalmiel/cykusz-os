@@ -1,7 +1,7 @@
 #include "kheap.h"
 #include "paging.h"
 #include "frame.h"
-#include <core/io.h>
+#include "vga.h"
 
 typedef struct
 {

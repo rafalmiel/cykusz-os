@@ -1,8 +1,8 @@
 #ifndef __arch_arm
 #include <arch/x86/kheap.h>
-#include <core/io.h>
 #endif
 
+#include <core/io.h>
 #include <core/ordered_array.h>
 
 s8 ordarr_lessthan_predicate(ordarr_type_t a, ordarr_type_t b)
@@ -82,15 +82,12 @@ void ordarr_remove(u32 i, ordarr_t *array)
 	--array->size;
 }
 
-#ifndef __arch_arm
 void ordarr_print(ordarr_t *array, void (*p)(ordarr_type_t))
 {
 	for (u32 i = 0; i < array->size; ++i)
 		p(ordarr_lookup(i, array));
-	vga_writestring("--------------------\n");
+	kprint("--------------------\n");
 }
-#endif
-
 
 void ordarr_remove_by_val(ordarr_type_t value, ordarr_t *array)
 {

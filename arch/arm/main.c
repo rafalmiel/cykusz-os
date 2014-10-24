@@ -5,16 +5,16 @@
 extern void led_on();
 extern void led_off();
 
-void sleep()
+static void sleep()
 {
 	for (int i = 0; i < 1000000; ++i){}
 }
 
-// kernel main function, it all begins here
-void arm_kernel_main(void) {
-	uart_init();
+extern void kernel_main();
 
-	uart_puts("\nHello world");
+void arm_kernel_main(void)
+{
+	kernel_main();
 
 	for (;;) {
 		led_on();

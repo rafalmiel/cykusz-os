@@ -1,5 +1,5 @@
 #include "paging.h"
-#include <core/io.h>
+#include "vga.h"
 #include "kheap.h"
 #include "frame.h"
 

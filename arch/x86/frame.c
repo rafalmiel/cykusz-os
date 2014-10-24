@@ -1,5 +1,5 @@
 #include "frame.h"
-#include <core/io.h>
+#include "vga.h"
 
 #define INDEX_FROM_BIT(a) ((a) / (8 * 4))
 #define OFFSET_FROM_BIT(a) ((a) % (8 * 4))

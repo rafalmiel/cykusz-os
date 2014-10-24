@@ -1,6 +1,6 @@
 #include "timer.h"
 #include "isr.h"
-#include <core/io.h>
+#include "vga.h"
 
 static u32 tick = 0;
 
