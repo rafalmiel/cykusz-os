@@ -16,16 +16,21 @@ C_OBJS		:= $(patsubst %.c,%.o,$(C_SOURCES))
 ASM_OBJS	:= $(patsubst %.S,%.o,$(ASM_SOURCES))
 C_DEPS		:= $(patsubst %.c,%.d,$(C_SOURCES))
 
-OUT		= myos.bin
+OUTELF		= myos.elf
+OUT		= myos.img
 LINKER		= arch/$(ARCH)/linker.ld
 
 all: $(OUT)
 
 -include $(C_DEPS)
 
-$(OUT): $(ASM_OBJS) $(C_OBJS) $(LINKER)
-	@$(CROSS_COMPILE)-gcc -T $(LINKER) -o $(OUT) $(LD_FLAGS) $(ASM_OBJS) $(C_OBJS) -lgcc
-	@echo -e "\e[1;35mLD $(OUT)\e[00m"
+$(OUT): $(OUTELF)
+	@$(CROSS_COMPILE)-objcopy $(OUTELF) -O binary $(OUT)
+	@echo -e "\e[1;35mOBJCOPY $(OUT)\e[00m"
+
+$(OUTELF): $(ASM_OBJS) $(C_OBJS)
+	@$(CROSS_COMPILE)-gcc -T $(LINKER) -o $(OUTELF) $(LD_FLAGS) $(ASM_OBJS) $(C_OBJS) -lgcc
+	@echo -e "\e[1;35mLD $(OUTELF)\e[00m"
 
 %.o: %.S Makefile
 	@$(ASM) $(ASM_FLAGS) $< -o $@
@@ -37,8 +42,9 @@ Makefile : Makefile.$(ARCH)
 	@$(CROSS_COMPILE)-gcc $(FLAGS) -MMD -MP -c $< -o $@
 	@echo -e "\e[1;33mCC $(FLAGS) $<\e[00m"
 
+
 run: all
-	qemu-system-i386 -kernel myos.bin -initrd LICENSE
+	qemu-system-i386 -kernel myos.elf
 
 clean:
 	-rm -rf $(ASM_OBJS)
