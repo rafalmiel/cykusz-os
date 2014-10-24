@@ -2,23 +2,24 @@
 
 #include "uart.h"
 
-#define UNUSED(x) (void)(x)
+extern void led_on();
+extern void led_off();
 
-const char hello[] = "\r\nHello World\r\n";
-const char halting[] = "\r\n*** system halting ***";
+void sleep()
+{
+	for (int i = 0; i < 1000000; ++i){}
+}
 
 // kernel main function, it all begins here
-void arm_kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) {
-    UNUSED(r0);
-    UNUSED(r1);
-    UNUSED(atags);
+void arm_kernel_main(void) {
+	uart_init();
 
-    uart_init();
+	uart_puts("\nHello world");
 
-    uart_puts(hello);
-
-    // Wait a bit
-    for(volatile int i = 0; i < 10000000; ++i) { }
-
-    uart_puts(halting);
+	for (;;) {
+		led_on();
+		sleep();
+		led_off();
+		sleep();
+	}
 }
