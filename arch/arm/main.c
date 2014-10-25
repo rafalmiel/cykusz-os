@@ -1,36 +1,23 @@
 #include <stdint.h>
 
+#include <core/io.h>
+
 #include "gpio.h"
 #include "uart.h"
-
-static void sleep()
-{
-	for (int i = 0; i < 3000000; ++i)
-		asm volatile("mov r0, r0");
-	for (int i = 0; i < 3000000; ++i)
-		asm volatile("mov r0, r0");
-	for (int i = 0; i < 3000000; ++i)
-		asm volatile("mov r0, r0");
-	for (int i = 0; i < 3000000; ++i)
-		asm volatile("mov r0, r0");
-}
+#include "timer.h"
+#include "isr.h"
 
 extern void kernel_main();
+extern void enable_interrupts();
 
 void arm_kernel_main(void)
 {
+	gpio_select(GPIO_PIN_ACTLED);
+	gpio_select(GPIO_PIN_PWRLED);
+
+	enable_interrupts();
+
+	//init_output();
+
 	kernel_main();
-
-	gpio_actled_select();
-	gpio_pwrled_select();
-
-	for (;;) {
-		gpio_actled_on();
-		gpio_pwrled_off();
-		sleep();
-
-		gpio_actled_off();
-		gpio_pwrled_on();
-		sleep();
-	}
 }

@@ -1,14 +1,20 @@
 .section .init
-.globl _start
-.globl arm_kernel_main
 
-b _start
+// Store interrupt vector table at the beginning of the init,
+// which will be copied to the 0x0 address of ram
+_init:
+
+.global kprint
+.global arm_kernel_main
+.global _start
 
 .section .text
 _start:
-	mov sp, #0x8000
-	ldr r0, =arm_kernel_main
-	bx r0
+	mov sp, #0x4000
+	bl prepare_interrupt_vector
 
-loop$:
-	b loop$
+	bl arm_kernel_main
+
+loop:
+	wfe
+	b loop

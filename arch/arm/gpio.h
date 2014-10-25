@@ -7,6 +7,7 @@
 #define GPIO_ON_BASE		(GPIO_BASE + 28)
 #define GPIO_OFF_BASE		(GPIO_BASE + 40)
 
+#define GPIO_TIMER		16
 #define GPIO_PIN_PWRLED		35
 #define GPIO_PIN_ACTLED		47
 
@@ -17,6 +18,8 @@ void gpio_actled_off();
 void gpio_pwrled_select();
 void gpio_pwrled_on();
 void gpio_pwrled_off();
+
+void leds_start_blinking();
 
 /*
  * delay function

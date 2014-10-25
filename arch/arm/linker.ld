@@ -1,8 +1,11 @@
 /* link-arm-eabi.ld - linker script for arm eabi */
+
 SECTIONS
 {
-	.init 0x8000 : {
+	. = 0x8000;
+	.init : {
 		KEEP(*(.init))
+		*(.isr_vector)
 	}
 
 	.text : {
@@ -12,9 +15,5 @@ SECTIONS
 
 	.data : {
 		*(.data)
-	}
-
-	/DISCARD/ : {
-		*(*)
 	}
 }

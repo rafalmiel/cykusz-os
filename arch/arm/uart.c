@@ -97,7 +97,7 @@ u8 uart_getc()
 {
 	// wait for UART to have recieved something
 	while(1) {
-	if (!(mmio_read(UART0_FR) & (1 << 4))) {
+		if (!(mmio_read(UART0_FR) & (1 << 4))) {
 			break;
 		}
 	}
