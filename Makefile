@@ -3,8 +3,8 @@ ARCH		?= x86
 
 include Makefile.$(ARCH)
 
-FLAGS		= -std=gnu99 -ffreestanding -g -O0 -Wall -Wextra -I. -Iinclude -D__arch_$(ARCH)
-LD_FLAGS	= -ffreestanding -O2 -g -nostdlib
+FLAGS		= -std=gnu99 -ffreestanding -O2 -nostdlib -Wall -Wextra -I. -Iinclude -D__arch_$(ARCH)
+LD_FLAGS	= -ffreestanding -O2 -nostdlib -Wl,--build-id=none
 
 PROJ_DIRS	:= . \
 		   core \
@@ -28,7 +28,7 @@ $(OUT): $(OUTELF)
 	@$(CROSS_COMPILE)-objcopy $(OUTELF) -O binary $(OUT)
 	@echo -e "\e[1;35mOBJCOPY $(OUT)\e[00m"
 
-$(OUTELF): $(ASM_OBJS) $(C_OBJS)
+$(OUTELF): $(ASM_OBJS) $(C_OBJS) $(LINKER)
 	@$(CROSS_COMPILE)-gcc -T $(LINKER) -o $(OUTELF) $(LD_FLAGS) $(ASM_OBJS) $(C_OBJS) -lgcc
 	@echo -e "\e[1;35mLD $(OUTELF)\e[00m"
 

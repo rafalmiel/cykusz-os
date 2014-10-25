@@ -3,12 +3,12 @@
 
 #include <core/common.h>
 
-#define GPIO_BASE 0x20200000
-#define GPIO_ON_BASE (GPIO_BASE + 28)
-#define GPIO_OFF_BASE (GPIO_BASE + 40)
+#define GPIO_BASE		0x20200000
+#define GPIO_ON_BASE		(GPIO_BASE + 28)
+#define GPIO_OFF_BASE		(GPIO_BASE + 40)
 
-#define GPIO_PIN_PWRLED 35
-#define GPIO_PIN_ACTLED 47
+#define GPIO_PIN_PWRLED		35
+#define GPIO_PIN_ACTLED		47
 
 void gpio_actled_select();
 void gpio_actled_on();
@@ -17,6 +17,18 @@ void gpio_actled_off();
 void gpio_pwrled_select();
 void gpio_pwrled_on();
 void gpio_pwrled_off();
+
+/*
+ * delay function
+ * int32_t delay: number of cycles to delay
+ *
+ * This just loops <delay> times in a way that the compiler
+ * wont optimize away.
+ */
+static inline void delay(u32 count) {
+	asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
+	     : : [count]"r"(count) : "cc");
+}
 
 static inline void gpio_select(u8 pin)
 {

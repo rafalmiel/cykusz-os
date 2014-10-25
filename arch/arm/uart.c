@@ -36,18 +36,6 @@ enum
 };
 
 /*
- * delay function
- * int32_t delay: number of cycles to delay
- *
- * This just loops <delay> times in a way that the compiler
- * wont optimize away.
- */
-static void delay(u32 count) {
-	asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
-	     : : [count]"r"(count) : "cc");
-}
-
-/*
  * Initialize UART0.
  */
 void uart_init() {
@@ -110,7 +98,7 @@ u8 uart_getc()
 	// wait for UART to have recieved something
 	while(1) {
 	if (!(mmio_read(UART0_FR) & (1 << 4))) {
-		break;
+			break;
 		}
 	}
 	return mmio_read(UART0_DR);

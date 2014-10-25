@@ -6,7 +6,7 @@ SECTIONS
 	}
 
 	.text : {
-		*(.rodata)
+		*(.rodata*)
 		*(.text)
 	}
 
