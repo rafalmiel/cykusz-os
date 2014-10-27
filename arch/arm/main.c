@@ -17,7 +17,7 @@ void arm_kernel_main(void)
 
 	enable_interrupts();
 
-	//init_output();
+	init_output();
 
 	kernel_main();
 }

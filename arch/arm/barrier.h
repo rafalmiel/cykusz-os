@@ -7,7 +7,7 @@
  * have completed
  */
 #define dmb() asm volatile \
-	("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
+	("mcr p15, #0, r0, c7, c10, #5")
 
 
 /*
@@ -16,7 +16,7 @@
  * completed
  */
 #define dsb() asm volatile \
-	("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
+	("mcr p15, #0, r0, c7, c10, #4")
 
 
 /*
@@ -25,6 +25,6 @@
  * Remove all data in data cache
  */
 #define flushcache() asm volatile \
-	("mcr p15, #0, %[zero], c7, c14, #0" : : [zero] "r" (0) )
+	("mcr p15, #0, r0, c7, c14, #0")
 
 #endif // BARRIER_H

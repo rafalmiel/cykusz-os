@@ -20,7 +20,7 @@ void mailbox_write(u8 channel, u32 data28)
 {
 	while ((*reg_status & MBOX_IS_FULL) != 0) {}
 
-	*reg_write = ((data28 & 0xFFFFFFF0) | (channel & 0x0F));
+	*reg_write = ((data28 & ~0xF) | (channel & 0xF));
 }
 
 u32 mailbox_read(u8 channel)
