@@ -17,7 +17,9 @@ void arm_kernel_main(void)
 
 	enable_interrupts();
 
+	kernel_main();
+
 	init_output();
 
-	kernel_main();
+	kprint("\nHello\n");
 }

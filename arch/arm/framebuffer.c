@@ -1,8 +1,10 @@
 #include <core/common.h>
+#include <core/io.h>
 
 #include "framebuffer.h"
 #include "barrier.h"
 #include "mailbox.h"
+#include "uart.h"
 
 typedef struct {
 	u32 width, height, virt_width, virt_height;
@@ -22,7 +24,7 @@ void framebuffer_init(void)
 	set.virt_width = set.width;
 	set.virt_height = set.height;
 	set.pitch = 0;
-	set.depth = 16;
+	set.depth = 24;
 	set.offset_x = 0;
 	set.offset_y = 0;
 	set.fb_address = 0;
@@ -31,6 +33,16 @@ void framebuffer_init(void)
 	mailbox_write(1, (u32)&set + 0x40000000);
 	mailbox_read(1);
 
-	memset((void*)set.fb_address, 255, set.fb_size/2);
-	memset((void*)(set.fb_address + set.fb_size/2), 128, set.fb_size/2);
+	u8 bytes_per_pix = set.depth / 8;
+	u32 total_pixels = set.fb_size / bytes_per_pix;
+
+	for (u32 i = 0; i < total_pixels; ++i) {
+		u8 *addr = (u8*)set.fb_address;
+
+		addr += (i * bytes_per_pix);
+
+		addr[0] = 255;
+		addr[1] = 0;
+		addr[2] = 255;
+	}
 }

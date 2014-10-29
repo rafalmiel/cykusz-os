@@ -4,7 +4,7 @@
 #include "gpio.h"
 #include "timer.h"
 
-#define __interrupt(name) __attribute((interrupt(name)))
+#define __interrupt(name) __attribute__((interrupt(name)))
 
 #define RPI_INTERRUPT_CONTROLLER_BASE   0x2000B200
 
@@ -80,4 +80,5 @@ void __interrupt("IRQ") int_interrupt(void)
 
 void __interrupt("FIQ") int_fast_interrupt(void)
 {
+	while (1) {}
 }
