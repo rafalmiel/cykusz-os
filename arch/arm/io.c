@@ -12,4 +12,5 @@ void init_output()
 void kprint(const char *str)
 {
 	uart_puts(str);
+	framebuffer_draw_string(str);
 }

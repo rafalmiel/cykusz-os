@@ -14,6 +14,10 @@ extern "C"
 void kernel_main(/*struct multiboot *multiboot*/)
 {
 	init_timer(0x200);
+
+	init_output();
+
+	kprint("\nHello\n");
 }
 
 
