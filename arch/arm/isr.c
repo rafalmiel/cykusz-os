@@ -66,7 +66,6 @@ void __interrupt("IRQ") int_interrupt(void)
 
 	int off = states[ind];
 
-
 	if (off & 0x1)
 		gpio_actled_on();
 	else
