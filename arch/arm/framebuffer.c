@@ -106,8 +106,8 @@ void framebuffer_init(void)
 	s_pitch = set.pitch;
 	s_pos_x = s_pos_y = 0;
 
-	s_max_x = set.width / CHAR_WIDTH;
-	s_max_y = set.height / CHAR_HEIGHT;
+	s_max_x = set.width / CHAR_WIDTH - 1;
+	s_max_y = set.height / CHAR_HEIGHT - 1;
 
 	u8 bytes_per_pix = set.depth / 8;
 	u32 total_pixels = set.fb_size / bytes_per_pix;

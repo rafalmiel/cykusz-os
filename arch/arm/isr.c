@@ -60,6 +60,8 @@ void __interrupt("IRQ") int_interrupt(void)
 {
 	static int ind = 0;
 
+	kprint("Timer!");
+
 	rpi_timer_irqclear();
 
 	ind = (ind + 1) % 4;
