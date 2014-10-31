@@ -44,7 +44,11 @@ void framebuffer_draw_char(char ch)
 	if (ch == '\n') {
 		new_line();
 		return;
+	} else if (ch == '\r') {
+		s_pos_x = 0;
+		return;
 	}
+
 	u16 *addr = (u16*)s_fb_addr
 			+ (CHAR_HEIGHT * SCREEN_WIDTH) * s_pos_y
 			+ s_pos_x * CHAR_WIDTH;
@@ -54,12 +58,13 @@ void framebuffer_draw_char(char ch)
 
 		u8 *tpl = s_font[c];
 
-		for (u8 row = 0; row < 9; ++row) {
+		for (u8 row = 0; row < CHAR_HEIGHT; ++row) {
 
-			u8 pxcol = tpl[row];
+			u8 pxcol = (row > 0) ? tpl[row - 1] : 0;
 
-			for (s32 col = 5; col >= 0; --col) {
-				if (pxcol & (1 << col)) {
+			for (s32 col = CHAR_WIDTH - 1; col >= 0; --col) {
+				if (row < CHAR_HEIGHT
+				    && pxcol & (1 << col)) {
 					*addr = s_fg_color;
 				} else {
 					*addr = s_bg_color;
@@ -67,6 +72,7 @@ void framebuffer_draw_char(char ch)
 
 				addr++;
 			}
+
 			addr += (SCREEN_WIDTH - CHAR_WIDTH);
 		}
 	}
@@ -117,7 +123,10 @@ void framebuffer_init(void)
 
 		addr += (i * bytes_per_pix);
 
-		addr[0] = 0;
-		addr[1] = 0;
+		addr[0] = 25;
+		addr[1] = 25;
 	}
+
+	kprint("MAX X: "); kprint_intnl(s_max_x);
+	kprint("MAX Y: "); kprint_intnl(s_max_y);
 }

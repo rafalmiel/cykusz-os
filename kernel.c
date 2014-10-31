@@ -13,7 +13,7 @@ extern "C"
 
 void kernel_main(/*struct multiboot *multiboot*/)
 {
-	init_timer(0x200);
+	init_timer(0x100);
 
 	init_output();
 
