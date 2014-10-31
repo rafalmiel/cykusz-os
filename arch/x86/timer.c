@@ -10,9 +10,9 @@ static void timer_callback(registers_t *regs)
 
 	tick++;
 	vga_writestring("Tick: ");
-	vga_writeint(regs->int_no);
+	kprint_int(regs->int_no);
 	vga_writestring(" ");
-	vga_writeint(tick);
+	kprint_int(tick);
 	vga_writestring("\n");
 }
 

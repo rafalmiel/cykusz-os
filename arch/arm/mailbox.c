@@ -1,4 +1,5 @@
 #include "mailbox.h"
+#include "barrier.h"
 
 #define MBOX_BASE		0x2000B880
 

@@ -17,7 +17,8 @@ void kernel_main(/*struct multiboot *multiboot*/)
 
 	init_output();
 
-	kprint("\nHello\n");
+	kprint("\nHello!\n");
+	kprint_hex(788);
 }
 
 

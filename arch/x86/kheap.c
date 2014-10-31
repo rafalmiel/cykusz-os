@@ -62,13 +62,13 @@ static void print_header(void *h)
 {
 	header_t *header = h;
 	vga_writestring("Addr: ");
-	vga_writehex((u32)header);
+	kprint_hex((u32)header);
 	vga_writestring(" is hole: ");
-	vga_writeint(header->is_hole);
+	kprint_int(header->is_hole);
 	vga_writestring(" size: ");
-	vga_writehex(header->size);
+	kprint_hex(header->size);
 	vga_writestring(" | footer->header: ");
-	vga_writehexnl((u32)((footer_t*)((u32)header
+	kprint_hexnl((u32)((footer_t*)((u32)header
 					 + header->size
 					 - sizeof(footer_t)))->header);
 }

@@ -54,7 +54,7 @@ static void vga_scroll(void)
 	}
 }
 
-static void vga_putchar(char c)
+void kprint_char(char c)
 {
 	if (c == 0x08 && terminal_column) { //handle backspace
 		terminal_column--;
@@ -122,84 +122,9 @@ void vga_writestring(const char *data)
 {
 	const size_t datalen = strlen(data);
 	for (size_t i = 0; i < datalen; ++i)
-		vga_putchar(data[i]);
+		kprint_char(data[i]);
 
 	vga_movecursor();
-}
-
-
-void vga_writeint(u32 n)
-{
-	if (n == 0) {
-		vga_putchar('0');
-		return;
-	}
-
-	s32 acc = n;
-	char c[32];
-	int i = 0;
-	while (acc > 0) {
-		c[i] = '0' + acc%10;
-		acc /= 10;
-		i++;
-	}
-	c[i] = 0;
-
-	char c2[32];
-	c2[i--] = 0;
-
-	int j = 0;
-	while(i >= 0) {
-		c2[i--] = c[j++];
-	}
-
-	vga_writestring(c2);
-}
-
-void vga_writehex(u32 n)
-{
-	s32 tmp;
-
-	vga_writestring("0x");
-
-	char noZeroes = 1;
-
-	int i;
-	for (i = 28; i > 0; i -= 4)
-	{
-		tmp = (n >> i) & 0xF;
-		if (tmp == 0 && noZeroes != 0)
-			continue;
-
-		if (tmp >= 0xA)  {
-			noZeroes = 0;
-			vga_putchar(tmp - 0xA + 'A' );
-		} else {
-			noZeroes = 0;
-			vga_putchar(tmp + '0');
-		}
-	}
-
-	tmp = n & 0xF;
-	if (tmp >= 0xA) {
-		vga_putchar(tmp - 0xA + 'A');
-	} else {
-		vga_putchar(tmp + '0');
-	}
-}
-
-
-void vga_writeintnl(u32 val)
-{
-	vga_writeint(val);
-	vga_writestring("\n");
-}
-
-
-void vga_writehexnl(u32 val)
-{
-	vga_writehex(val);
-	vga_writestring("\n");
 }
 
 void init_output()

@@ -41,7 +41,7 @@ static void page_fault(registers_t *regs)
 
 	vga_writestring(") at ");
 
-	vga_writehex(faulting_address);
+	kprint_hex(faulting_address);
 
 	vga_writestring("\n");
 

@@ -39,7 +39,7 @@ static void new_line()
 	s_pos_y++;
 }
 
-static void draw_char(char ch)
+void framebuffer_draw_char(char ch)
 {
 	if (ch == '\n') {
 		new_line();
@@ -80,7 +80,7 @@ void framebuffer_draw_string(const char *str)
 {
 	char c;
 	while ((c = ((char)*str++))) {
-		draw_char(c);
+		framebuffer_draw_char(c);
 	}
 }
 

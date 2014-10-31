@@ -9,6 +9,11 @@ void init_output()
 	//uart_init();
 }
 
+void kprint_char(char c)
+{
+	framebuffer_draw_char(c);
+}
+
 void kprint(const char *str)
 {
 	uart_puts(str);
