@@ -1,11 +1,12 @@
 #include <core/timer.h>
 
+#include "ioports.h"
 #include "timer.h"
 #include "isr.h"
 
 /* See the documentation for the ARM side timer (Section 14 of the
    BCM2835 Peripherals PDF) */
-#define RPI_ARMTIMER_BASE               0x2000B400
+#define RPI_ARMTIMER_BASE		(IO_BASE + 0x0000B400)
 
 /* Section 14.2 of the BCM2835 Peripherals documentation details
    the register layout for the ARM side timer */

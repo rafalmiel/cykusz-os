@@ -8,13 +8,26 @@ b _start
 
 .global kprint
 .global arm_kernel_main
+.global init_sys
 .global _start
 
 .section .text
 _start:
-	mov sp, #0x4000
+	mov r4, #0xC0000000
 
-	bl arm_kernel_main
+	/* ABORT stack at 0x2400 */
+	cps #0x17		/* Change to Abort mode */
+	add sp, r4, #0x2800
+
+	/* IRQ stack at 0x2800 */
+	cps #0x12		/* Change to IRQ mode */
+	add sp, r4, #0x2c00
+
+	/* Supervisor stack at 0x2000 */
+	cps #0x13		/* Change to supervisor (SVC) mode */
+	add sp, r4, #0x2400
+
+	bl init_sys
 
 loop:
 	wfe

@@ -3,19 +3,26 @@
 #include "uart.h"
 #include "framebuffer.h"
 
+static int is_fb_init = 0;
+
 void init_output()
 {
 	framebuffer_init();
-	//uart_init();
+	is_fb_init = 1;
 }
 
 void kprint_char(char c)
 {
-	framebuffer_draw_char(c);
+	uart_putc(c);
+	if (is_fb_init) {
+		framebuffer_draw_char(c);
+	}
 }
 
 void kprint(const char *str)
 {
 	uart_puts(str);
-	framebuffer_draw_string(str);
+	if (is_fb_init) {
+		framebuffer_draw_string(str);
+	}
 }

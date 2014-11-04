@@ -6,6 +6,8 @@
 #include "mailbox.h"
 #include "uart.h"
 #include "font.h"
+#include "gpio.h"
+#include "mmu.h"
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
@@ -105,10 +107,15 @@ void framebuffer_init(void)
 	set.fb_address = 0;
 	set.fb_size = 0;
 
-	mailbox_write(1, (u32)&set + 0x40000000);
+	mailbox_write(1, (u32)&set - VIRT_BASE + 0x40000000);
 	mailbox_read(1);
 
-	s_fb_addr = (void*)set.fb_address;
+	u32 offset = addr_offset(set.fb_address);
+
+	/* Map framebuffer to 0xE0000000 */
+	add_pt_mapping(0xE0000000, addr_high(set.fb_address));
+
+	s_fb_addr = (void*)(0xE0000000 + offset);
 	s_pitch = set.pitch;
 	s_pos_x = s_pos_y = 0;
 
@@ -119,14 +126,11 @@ void framebuffer_init(void)
 	u32 total_pixels = set.fb_size / bytes_per_pix;
 
 	for (u32 i = 0; i < total_pixels; ++i) {
-		u8 *addr = (u8*)set.fb_address;
+		u8 *addr = (u8*)s_fb_addr;
 
 		addr += (i * bytes_per_pix);
 
 		addr[0] = 25;
 		addr[1] = 25;
 	}
-
-	kprint("MAX X: "); kprint_intnl(s_max_x);
-	kprint("MAX Y: "); kprint_intnl(s_max_y);
 }

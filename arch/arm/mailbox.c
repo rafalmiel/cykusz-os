@@ -1,7 +1,8 @@
 #include "mailbox.h"
 #include "barrier.h"
+#include "ioports.h"
 
-#define MBOX_BASE		0x2000B880
+#define MBOX_BASE		(IO_BASE + 0x0000B880)
 
 #define MBOX_IS_FULL		0x80000000
 #define MBOX_IS_EMPTY		0x40000000

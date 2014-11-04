@@ -14,11 +14,10 @@ extern "C"
 void kernel_main(/*struct multiboot *multiboot*/)
 {
 	init_timer(0x100);
-
 	init_output();
 
-	kprint("\nHello!\n");
-	kprint_hex(788);
+	kprint("Hello!\n");
+	while(1) {}
 }
 
 

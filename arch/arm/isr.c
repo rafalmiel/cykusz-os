@@ -6,7 +6,7 @@
 
 #define __interrupt(name) __attribute__((interrupt(name)))
 
-#define RPI_INTERRUPT_CONTROLLER_BASE   0x2000B200
+#define RPI_INTERRUPT_CONTROLLER_BASE		(IO_BASE + 0x0000B200)
 
 /* The interrupt controller memory mapped register set */
 typedef struct {
@@ -62,16 +62,35 @@ void __interrupt("UNDEF") int_undefined(void)
 
 void __interrupt("SWI") int_software(void)
 {
+	kprint("Got SWI interrupt\n");
+	while (1)
+	{
+
+	}
 }
 
 void __interrupt("ABORT") int_prefetch_abort(void)
 {
+	kprint("Got prefetch abort interrupt\n");
+	while (1)
+	{
 
+	}
 }
 
 void __interrupt("ABORT") int_data_abort(void)
 {
+	register unsigned int addr, far;
+	asm volatile("mov %[addr], lr" : [addr] "=r" (addr) );
+	/* Read fault address register */
+	asm volatile("mrc p15, 0, %[addr], c6, c0, 0": [addr] "=r" (far) );
+	kprint("Got data abort interrupt\n");
+	kprint_hexnl(addr);
+	kprint_hexnl(far);
+	while (1)
+	{
 
+	}
 }
 
 static int states[] = {1, 3, 2, 0};

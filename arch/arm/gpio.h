@@ -3,7 +3,9 @@
 
 #include <core/common.h>
 
-#define GPIO_BASE		0x20200000
+#include "ioports.h"
+
+#define GPIO_BASE		(IO_BASE + 0x00200000)
 #define GPIO_ON_BASE		(GPIO_BASE + 28)
 #define GPIO_OFF_BASE		(GPIO_BASE + 40)
 

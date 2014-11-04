@@ -2,6 +2,7 @@
 #include "mmio.h"
 #include "uart.h"
 #include "gpio.h"
+#include "ioports.h"
 
 enum
 {
@@ -12,7 +13,7 @@ enum
 	GPPUDCLK0 = (GPIO_BASE + 0x98),
 
 	// The base address for UART.
-	UART0_BASE = 0x20201000,
+	UART0_BASE = IO_BASE + 0x00201000,
 
 	// The offsets for reach register for the UART.
 	UART0_DR     = (UART0_BASE + 0x00),
