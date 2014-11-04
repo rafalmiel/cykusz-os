@@ -107,7 +107,7 @@ void framebuffer_init(void)
 	set.fb_address = 0;
 	set.fb_size = 0;
 
-	mailbox_write(1, (u32)&set - VIRT_BASE + 0x40000000);
+	mailbox_write(1, virt_to_phys((u32)&set) + 0x40000000);
 	mailbox_read(1);
 
 	u32 offset = addr_offset(set.fb_address);
@@ -130,7 +130,7 @@ void framebuffer_init(void)
 
 		addr += (i * bytes_per_pix);
 
-		addr[0] = 25;
-		addr[1] = 25;
+		addr[0] = 0;
+		addr[1] = 0;
 	}
 }

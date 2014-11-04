@@ -93,19 +93,21 @@ void __interrupt("ABORT") int_data_abort(void)
 	}
 }
 
-static int states[] = {1, 3, 2, 0};
+static int states[] = {1,4,2,4,1,2,1,4,1,2,3,1,2,4,1,2,3,1,4,2,3,2,3,1,2,3,4,1};
 
 void __interrupt("IRQ") int_interrupt(void)
 {
 	static int ind = 0;
 
-	kprint("Timer!");
+	kprint("Timer! ");
+	kprint_hex(ind);
+	kprint("\r");
 
 	rpi_timer_irqclear();
 
-	ind = (ind + 1) % 4;
+	ind++;
 
-	int off = states[ind];
+	int off = states[ind % 28];
 
 	if (off & 0x1)
 		gpio_actled_on();

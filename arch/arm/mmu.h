@@ -6,8 +6,6 @@
 
 static u32 *s_page_table = (u32*)0xC0004000;
 
-#define virt_to_phys(v) ((v) - 0x)
-
 static inline u32 addr_offset(u32 addr)
 {
 	return addr % 0x00100000;
@@ -16,6 +14,13 @@ static inline u32 addr_offset(u32 addr)
 static inline u32 addr_high(u32 addr)
 {
 	return addr - addr_offset(addr);
+}
+
+static inline u32 virt_to_phys(u32 virt)
+{
+	u32 phys = s_page_table[virt >> 20];
+
+	return addr_high(phys) + addr_offset(virt);
 }
 
 static inline void remove_pt_mapping(u32 addr)
