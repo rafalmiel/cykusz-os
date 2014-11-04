@@ -14,6 +14,8 @@
 #define RPI_BASIC_IRQ_ACCESS_ERROR_1	(1 << 6)
 #define RPI_BASIC_IRQ_ACCESS_ERROR_0	(1 << 7)
 
+void init_interrupts(void);
+
 void rpi_basic_interrupt_enable(u32 source);
 
 #endif // ISR_H

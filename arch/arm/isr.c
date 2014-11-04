@@ -26,6 +26,26 @@ typedef struct {
 static rpi_irq_controller_t* rpi_controller =
 		(rpi_irq_controller_t*)RPI_INTERRUPT_CONTROLLER_BASE;
 
+__attribute__((naked, aligned(32))) static void isr_vectors(void)
+{
+	asm volatile("b _start\n"
+		     "b int_undefined\n"
+		     "b int_software\n"
+		     "b int_prefetch_abort\n"
+		     "b int_data_abort\n"
+		     "nop\n"
+		     "b int_interrupt\n"
+		     "b int_fast_interrupt");
+}
+
+void init_interrupts()
+{
+	/* Set interrupt base register */
+	asm volatile("mcr p15, 0, %[addr], c12, c0, 0" : : [addr] "r" (&isr_vectors));
+	/* Turn on interrupts */
+	asm volatile("cpsie i");
+}
+
 void rpi_basic_interrupt_enable(u32 source)
 {
 	rpi_controller->enable_basic_irqs = source;

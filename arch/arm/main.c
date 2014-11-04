@@ -12,10 +12,11 @@ extern void enable_interrupts();
 
 void arm_kernel_main(void)
 {
+	init_interrupts();
+
 	gpio_select(GPIO_PIN_ACTLED);
 	gpio_select(GPIO_PIN_PWRLED);
 
-	enable_interrupts();
 
 	kernel_main();
 }

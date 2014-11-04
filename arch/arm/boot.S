@@ -4,6 +4,8 @@
 // which will be copied to the 0x0 address of ram
 _init:
 
+b _start
+
 .global kprint
 .global arm_kernel_main
 .global _start
@@ -11,7 +13,6 @@ _init:
 .section .text
 _start:
 	mov sp, #0x4000
-	bl prepare_interrupt_vector
 
 	bl arm_kernel_main
 
