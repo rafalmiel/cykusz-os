@@ -85,7 +85,9 @@ void __interrupt("ABORT") int_data_abort(void)
 	/* Read fault address register */
 	asm volatile("mrc p15, 0, %[addr], c6, c0, 0": [addr] "=r" (far) );
 	kprint("Got data abort interrupt\n");
+	kprint("Faulting instruction: ");
 	kprint_hexnl(addr);
+	kprint("Faulting addr:        ");
 	kprint_hexnl(far);
 	while (1)
 	{
@@ -101,7 +103,7 @@ void __interrupt("IRQ") int_interrupt(void)
 
 	kprint("Timer! ");
 	kprint_hex(ind);
-	kprint("\n");
+	kprint("\r");
 
 	rpi_timer_irqclear();
 

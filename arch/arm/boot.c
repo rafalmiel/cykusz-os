@@ -3,14 +3,28 @@
 
 extern void arm_kernel_main(void);
 
-u32 *s_page_table = (u32 *const)0xC0004000;
+u32 *s_page_table = (u32 *const)0x00004000;
+u32 *s_kernel_table = (u32 *const)0x00003C00;
+
+extern u32 __kernel_init_start;
+extern u32 __kernel_text_start;
+extern u32 __kernel_data_start;
+extern u32 __kernel_bss_start;
+extern u32 __kernel_bss_end;
 
 __attribute__((naked)) void init_sys(void)
 {
 	register u32 pt_addr;
 	register u32 control;
+	register u32 x;
+	register u32 addr;
+	register u32 init_start = (u32)&__kernel_init_start;
+	register u32 data_start = (u32)&__kernel_data_start;
+	register u32 data_end = (u32)&__kernel_bss_end;
 
 	asm volatile("push {r0, r1, r2}");
+
+	kprint("test\n");
 
 #define MAP(virt, phys) do {s_page_table[(virt >> 20)] = phys | 0x400 | 2;}\
 			while(0)
@@ -19,7 +33,8 @@ __attribute__((naked)) void init_sys(void)
 	MAP(0, 0);
 
 	/* Mapped kernel at 0xC0000000 */
-	MAP(0xC0000000, 0);
+	//MAP(0xC0000000, 0);
+	s_page_table[0xC0000000 >> 20] = (u32)s_kernel_table | 1;
 
 	/* Map peripherals regs to 0xD0000000 */
 	MAP(0xD0000000, 0x20000000);
@@ -27,6 +42,25 @@ __attribute__((naked)) void init_sys(void)
 	MAP(0xD0200000, 0x20200000);
 
 #undef MAP
+
+	for (x = 0; x < 256; ++x) {
+		addr = (x << 12);
+
+		if (x < init_start) {
+
+			s_kernel_table[x] = addr | 0x0010 | 2;
+		} else if (x < data_start) {
+
+			s_kernel_table[x] = addr | 0x0010 | 2;
+		} else if (x < data_end) {
+
+			s_kernel_table[x] = addr | 0x0010 | 3;
+		} else {
+			s_kernel_table[x] = 0;
+		}
+	}
+
+	kprint("test\n");
 
 	pt_addr = (u32) s_page_table;
 

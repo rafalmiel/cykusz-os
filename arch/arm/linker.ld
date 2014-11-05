@@ -36,5 +36,5 @@ SECTIONS
 		*(COMMON)
 	}
 
-	__kernel_bss_end = .;
+	__kernel_bss_end = . - 0xC0000000;
 }
