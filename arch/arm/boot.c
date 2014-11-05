@@ -20,7 +20,8 @@ __attribute__((naked)) void init_sys(void)
 	register u32 addr;
 	register u32 init_start = (u32)&__kernel_init_start;
 	register u32 data_start = (u32)&__kernel_data_start;
-	register u32 data_end = (u32)&__kernel_bss_end;
+	register u32 bss_start = (u32)&__kernel_bss_start;
+	register u32 bss_end = (u32)&__kernel_bss_end;
 
 	asm volatile("push {r0, r1, r2}");
 
@@ -33,13 +34,11 @@ __attribute__((naked)) void init_sys(void)
 	MAP(0, 0);
 
 	/* Mapped kernel at 0xC0000000 */
-	//MAP(0xC0000000, 0);
 	s_page_table[0xC0000000 >> 20] = (u32)s_kernel_table | 1;
 
 	/* Map whole IO address space (0x20000000 - 0x20FFFFFFF) */
 	for (x = 0; x < 16; ++x) {
 		MAP((0xD0000000 + (x << 20)), (0x20000000 + (x << 20)));
-
 	}
 
 #undef MAP
@@ -47,21 +46,24 @@ __attribute__((naked)) void init_sys(void)
 	for (x = 0; x < 256; ++x) {
 		addr = (x << 12);
 
-		if (x < init_start) {
-
-			s_kernel_table[x] = addr | 0x0010 | 2;
-		} else if (x < data_start) {
-
-			s_kernel_table[x] = addr | 0x0010 | 2;
-		} else if (x < data_end) {
-
+		if (addr < init_start) {
+			/* Map first 0x8000 as read-write data*/
+			s_kernel_table[x] = addr | 0x0010 | 3;
+		} else if (addr < data_start) {
+			/* Map kernel code as executable read only*/
+			s_kernel_table[x] = addr | 0x0230 | 2;
+		} else if (addr < bss_end) {
+			/* Map kernel data as not executable read-write*/
 			s_kernel_table[x] = addr | 0x0010 | 3;
 		} else {
 			s_kernel_table[x] = 0;
 		}
 	}
 
-	kprint("test\n");
+	/* Zero out bss region */
+	for (x = bss_start; x < bss_end; x+=4) {
+		*(u32*)x = 0;
+	}
 
 	pt_addr = (u32) s_page_table;
 

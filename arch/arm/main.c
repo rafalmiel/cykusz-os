@@ -16,6 +16,7 @@ extern u32 __kernel_data_start;
 extern u32 __kernel_bss_start;
 extern u32 __kernel_bss_end;
 
+static u32 *s_kernel_table = (u32 *const)0xC0003C00;
 
 void arm_kernel_main(void)
 {
@@ -41,6 +42,12 @@ void arm_kernel_main(void)
 	kprint("Data start: "); kprint_hexnl(data_start);
 	kprint("Bss  start: "); kprint_hexnl(bss_start);
 	kprint("Bss    end: "); kprint_hexnl(bss_end);
+
+	for (u32 x = 0; x < 16; ++x) {
+		kprint_int(x);
+		kprint(" ");
+		kprint_hexnl(s_kernel_table[x]);
+	}
 
 	while(1) {}
 }
