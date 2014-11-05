@@ -22,4 +22,7 @@ void arm_kernel_main(void)
 	gpio_select(GPIO_PIN_PWRLED);
 
 	kernel_main();
+	usb_on();
+
+	while(1) {}
 }

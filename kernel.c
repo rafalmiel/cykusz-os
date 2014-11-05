@@ -17,7 +17,6 @@ void kernel_main(/*struct multiboot *multiboot*/)
 	init_output();
 
 	kprint("Hello!\n");
-	while(1) {}
 }
 
 

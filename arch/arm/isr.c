@@ -101,7 +101,7 @@ void __interrupt("IRQ") int_interrupt(void)
 
 	kprint("Timer! ");
 	kprint_hex(ind);
-	kprint("\r");
+	kprint("\n");
 
 	rpi_timer_irqclear();
 

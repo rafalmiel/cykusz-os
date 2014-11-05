@@ -32,13 +32,47 @@ u32 s_max_y = 0;
 void *s_fb_addr = 0;
 u32 s_pitch = 0;
 
+u8 s_bytes_per_pix;
+u32 s_total_pixels;
+
 u32 s_fg_color = 0b1111111111111111;
 u32 s_bg_color = 0b0000000000000000;
+
+static void shift_up()
+{
+	u32 x;
+	const u32 xmax = s_total_pixels - (SCREEN_WIDTH * CHAR_HEIGHT)*2;
+	const u32 off = s_total_pixels - xmax;
+
+	for (x = 0; x < xmax; ++x) {
+		u8 *addr = (u8*)s_fb_addr;
+
+		addr += (x * s_bytes_per_pix);
+
+		addr[0] = addr[off];
+		addr[1] = addr[off+1];
+	}
+
+	for (x = xmax; x < s_total_pixels; ++x) {
+		u8 *addr = (u8*)s_fb_addr;
+
+		addr += (x * s_bytes_per_pix);
+
+		addr[0] = 0;
+		addr[1] = 0;
+	}
+}
 
 static void new_line()
 {
 	s_pos_x = 0;
 	s_pos_y++;
+
+	if (s_pos_y > s_max_y) {
+		shift_up();
+
+		s_pos_y--;
+	}
 }
 
 void framebuffer_draw_char(char ch)
@@ -122,13 +156,13 @@ void framebuffer_init(void)
 	s_max_x = set.width / CHAR_WIDTH - 1;
 	s_max_y = set.height / CHAR_HEIGHT - 1;
 
-	u8 bytes_per_pix = set.depth / 8;
-	u32 total_pixels = set.fb_size / bytes_per_pix;
+	s_bytes_per_pix = set.depth / 8;
+	s_total_pixels = set.fb_size / s_bytes_per_pix;
 
-	for (u32 i = 0; i < total_pixels; ++i) {
+	for (u32 i = 0; i < s_total_pixels; ++i) {
 		u8 *addr = (u8*)s_fb_addr;
 
-		addr += (i * bytes_per_pix);
+		addr += (i * s_bytes_per_pix);
 
 		addr[0] = 0;
 		addr[1] = 0;
