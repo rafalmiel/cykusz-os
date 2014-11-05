@@ -36,10 +36,11 @@ __attribute__((naked)) void init_sys(void)
 	//MAP(0xC0000000, 0);
 	s_page_table[0xC0000000 >> 20] = (u32)s_kernel_table | 1;
 
-	/* Map peripherals regs to 0xD0000000 */
-	MAP(0xD0000000, 0x20000000);
-	MAP(0xD0100000, 0x20100000);
-	MAP(0xD0200000, 0x20200000);
+	/* Map whole IO address space (0x20000000 - 0x20FFFFFFF) */
+	for (x = 0; x < 16; ++x) {
+		MAP((0xD0000000 + (x << 20)), (0x20000000 + (x << 20)));
+
+	}
 
 #undef MAP
 
