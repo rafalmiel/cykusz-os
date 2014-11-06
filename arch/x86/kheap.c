@@ -1,7 +1,8 @@
+#include <core/io.h>
+
 #include "kheap.h"
 #include "paging.h"
 #include "frame.h"
-#include "vga.h"
 
 typedef struct
 {
@@ -61,13 +62,13 @@ static s8 header_t_less_than(void* a, void *b)
 static void print_header(void *h)
 {
 	header_t *header = h;
-	vga_writestring("Addr: ");
+	kprint("Addr: ");
 	kprint_hex((u32)header);
-	vga_writestring(" is hole: ");
+	kprint(" is hole: ");
 	kprint_int(header->is_hole);
-	vga_writestring(" size: ");
+	kprint(" size: ");
 	kprint_hex(header->size);
-	vga_writestring(" | footer->header: ");
+	kprint(" | footer->header: ");
 	kprint_hexnl((u32)((footer_t*)((u32)header
 					 + header->size
 					 - sizeof(footer_t)))->header);
@@ -84,7 +85,7 @@ static void print_heap(heap_t *heap)
 		header = (header_t*)((u32)header + header->size);
 	}
 
-	vga_writestring("=================\n");
+	kprint("=================\n");
 }
 
 static void expand(u32 new_size, heap_t *heap)

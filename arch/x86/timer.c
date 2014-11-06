@@ -1,6 +1,7 @@
 #include <core/timer.h>
+#include <core/io.h>
+
 #include "isr.h"
-#include "vga.h"
 
 static u32 tick = 0;
 
@@ -9,11 +10,11 @@ static void timer_callback(registers_t *regs)
 	(void) regs;
 
 	tick++;
-	vga_writestring("Tick: ");
+	kprint("Tick: ");
 	kprint_int(regs->int_no);
-	vga_writestring(" ");
+	kprint(" ");
 	kprint_int(tick);
-	vga_writestring("\n");
+	kprint("\n");
 }
 
 void init_timer(u32 freq)

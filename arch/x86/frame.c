@@ -1,5 +1,6 @@
+#include <core/io.h>
+
 #include "frame.h"
-#include "vga.h"
 
 #define INDEX_FROM_BIT(a) ((a) / (8 * 4))
 #define OFFSET_FROM_BIT(a) ((a) % (8 * 4))
@@ -61,7 +62,7 @@ void frame_alloc(page_t *page)
 		u32 idx = first_frame();
 
 		if (idx == (u32)-1) {
-			vga_writestring("no frames!");
+			kprint("no frames!");
 			asm volatile("hlt");
 		}
 

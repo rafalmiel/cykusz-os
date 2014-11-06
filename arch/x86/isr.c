@@ -1,7 +1,7 @@
 #include <core/common.h>
+#include <core/io.h>
 
 #include "isr.h"
-#include "vga.h"
 
 isr_t interrupt_handlers[256];
 
@@ -11,9 +11,8 @@ void isr_handler(registers_t *reg)
 		isr_t handler = interrupt_handlers[reg->int_no];
 		handler(reg);
 	} else {
-		vga_writestring("unhandled interrupt: ");
-		vga_writeint(reg->int_no);
-		vga_writestring("\n");
+		kprint("unhandled interrupt: ");
+		kprint_intnl(reg->int_no);
 
 		asm volatile("hlt");
 	}

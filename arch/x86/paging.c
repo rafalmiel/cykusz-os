@@ -1,5 +1,6 @@
+#include <core/io.h>
+
 #include "paging.h"
-#include "vga.h"
 #include "kheap.h"
 #include "frame.h"
 
@@ -25,25 +26,25 @@ static void page_fault(registers_t *regs)
 	int reserved	= regs->err_code & 0x8;
 	//int id		= regs->err_code & 0x10;
 
-	vga_writestring("Page fault! ( ");
+	kprint("Page fault! ( ");
 
 	if (present)
-		vga_writestring("present ");
+		kprint("present ");
 
 	if (rw)
-		vga_writestring("read-only ");
+		kprint("read-only ");
 
 	if (us)
-		vga_writestring("user-mode ");
+		kprint("user-mode ");
 
 	if (reserved)
-		vga_writestring("reserved ");
+		kprint("reserved ");
 
-	vga_writestring(") at ");
+	kprint(") at ");
 
 	kprint_hex(faulting_address);
 
-	vga_writestring("\n");
+	kprint("\n");
 
 	asm volatile("hlt");
 }
