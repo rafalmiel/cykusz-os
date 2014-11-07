@@ -3,6 +3,7 @@
 #include "isr.h"
 #include "gpio.h"
 #include "timer.h"
+#include "framebuffer.h"
 
 #define __interrupt(name) __attribute__((interrupt(name)))
 
@@ -81,6 +82,7 @@ void __interrupt("ABORT") int_prefetch_abort(void)
 void __interrupt("ABORT") int_data_abort(void)
 {
 	register unsigned int addr, far;
+	framebuffer_disable();
 	asm volatile("mov %[addr], lr" : [addr] "=r" (addr) );
 	/* Read fault address register */
 	asm volatile("mrc p15, 0, %[addr], c6, c0, 0": [addr] "=r" (far) );

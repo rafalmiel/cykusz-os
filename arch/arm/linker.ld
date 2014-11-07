@@ -20,6 +20,14 @@ SECTIONS
 	}
 
 	. = ALIGN(4k) - 0xC0000000;
+	__kernel_table_start = .;
+
+	.kernel_table (0xC0000000 + __kernel_table_start) : AT(__kernel_table_start)
+	{
+		arch/arm/boot.c.o(.kernel_table)
+	}
+
+	. = . - 0xC0000000;
 	__kernel_data_start = .;
 
 	.data (0xC0000000 + __kernel_data_start) : AT(__kernel_data_start)

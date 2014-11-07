@@ -1,3 +1,8 @@
+.section .kernel_table
+.balign 4
+.global __kernel_table
+__kernel_table: .skip 256*64
+
 .section .init
 
 // Store interrupt vector table at the beginning of the init,

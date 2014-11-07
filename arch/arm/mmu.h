@@ -18,7 +18,9 @@ static inline u32 addr_high(u32 addr)
 
 static inline u32 virt_to_phys(u32 virt)
 {
-	u32 phys = s_page_table[virt >> 20];
+	/* Temporary hack */
+	return virt - 0xC0000000;
+	u32 val = s_page_table[virt >> 20];
 
 	return addr_high(phys) + addr_offset(virt);
 }

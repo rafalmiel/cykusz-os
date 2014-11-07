@@ -26,3 +26,8 @@ void kprint(const char *str)
 		framebuffer_draw_string(str);
 	}
 }
+
+void framebuffer_disable()
+{
+	is_fb_init = 0;
+}

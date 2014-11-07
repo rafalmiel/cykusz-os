@@ -3,11 +3,14 @@
 
 extern void arm_kernel_main(void);
 
+extern u32 __kernel_table;
+
 u32 *s_page_table = (u32 *const)0x00004000;
-u32 *s_kernel_table = (u32 *const)0x00003C00;
+u32 *s_kernel_table = (u32 *const)((u32)&__kernel_table);
 
 extern u32 __kernel_init_start;
 extern u32 __kernel_text_start;
+extern u32 __kernel_table_start;
 extern u32 __kernel_data_start;
 extern u32 __kernel_bss_start;
 extern u32 __kernel_bss_end;
@@ -19,6 +22,7 @@ __attribute__((naked)) void init_sys(void)
 	register u32 x;
 	register u32 addr;
 	register u32 init_start = (u32)&__kernel_init_start;
+	register u32 table_start = (u32)&__kernel_table_start;
 	register u32 data_start = (u32)&__kernel_data_start;
 	register u32 bss_start = (u32)&__kernel_bss_start;
 	register u32 bss_end = (u32)&__kernel_bss_end;
@@ -33,9 +37,6 @@ __attribute__((naked)) void init_sys(void)
 	/* Identity mapping of the first MB of ram, later removed */
 	MAP(0, 0);
 
-	/* Mapped kernel at 0xC0000000 */
-	s_page_table[0xC0000000 >> 20] = (u32)s_kernel_table | 1;
-
 	/* Map whole IO address space (0x20000000 - 0x20FFFFFFF) */
 	for (x = 0; x < 16; ++x) {
 		MAP((0xD0000000 + (x << 20)), (0x20000000 + (x << 20)));
@@ -43,13 +44,25 @@ __attribute__((naked)) void init_sys(void)
 
 #undef MAP
 
+	/* Zero out kernel table */
+	for (x = table_start; x < data_start; ++x) {
+		*(u32*)x = 0;
+	}
+
+	/* Put pointers to empty kernel table for data region
+	 * 0xC0000000 - 0xD0000000 */
+	for (x = (0xC0000000 >> 20); x < (0xD0000000 >> 20); ++x) {
+		s_page_table[x] = ((u32)s_kernel_table + (x - 3072) * 0x400)
+				| 1;
+	}
+
 	for (x = 0; x < 256; ++x) {
 		addr = (x << 12);
 
 		if (addr < init_start) {
 			/* Map first 0x8000 as read-write data*/
 			s_kernel_table[x] = addr | 0x0010 | 3;
-		} else if (addr < data_start) {
+		} else if (addr < table_start) {
 			/* Map kernel code as executable read only*/
 			s_kernel_table[x] = addr | 0x0230 | 2;
 		} else if (addr < bss_end) {
