@@ -1,14 +1,13 @@
+#include <core/kheap.h>
 #include <core/io.h>
 #include <core/frame.h>
-
-#include "kheap.h"
-#include "paging.h"
+#include <asm/paging.h>
 
 typedef struct
 {
 	u32 magic;
-	u8 is_hole;
 	u32 size;
+	u8 is_hole;
 } header_t;
 
 typedef struct
@@ -139,6 +138,7 @@ static footer_t *prepare_footer(header_t *header)
 	footer_t *footer = (footer_t*)((u32)header
 				       + header->size
 				       - sizeof(footer_t));
+
 	footer->magic = HEAP_MAGIC;
 	footer->header = header;
 
@@ -265,6 +265,10 @@ static void *alloc(u32 size, u8 page_align, heap_t *heap)
 		/* Create footer only if hole is not at the end address */
 		if ((u32)hole_hdr + hole_hdr->size < heap->end_address) {
 			prepare_footer(hole_hdr);
+			if (size > 6) {
+				kprint("HALT\n");
+				//while (1) {}
+			}
 		}
 
 		ordarr_insert((void*)hole_hdr, &heap->index);
@@ -328,11 +332,12 @@ static void free(void *p, heap_t *heap)
 
 u32 kmalloc_int(u32 size, int align, u32 *phys)
 {
-	void *addr = alloc(size, (u8)align, s_heap);
+	void *addr = alloc(align_32B(size), (u8)align, s_heap);
 	if (phys != 0) {
 		page_t *page = page_get((u32)addr);
-		*phys = page->frame * 0x1000 + ((u32)addr & 0xFFF);
+		*phys = page_base_addr(page) * 0x1000 + ((u32)addr & 0xFFF);
 	}
+
 	return (u32)addr;
 }
 
@@ -394,3 +399,4 @@ void debug_heap()
 {
 	print_heap(s_heap);
 }
+

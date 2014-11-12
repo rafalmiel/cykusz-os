@@ -1,5 +1,5 @@
 #ifndef __arch_arm
-#include <arch/x86/kheap.h>
+#include <core/kheap.h>
 #endif
 
 #include <core/io.h>

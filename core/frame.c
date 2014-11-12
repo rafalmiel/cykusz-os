@@ -54,6 +54,8 @@ static u32 first_frame()
 
 void frame_alloc(page_t *page)
 {
+	//kprint("Page base addr: ");
+	//kprint_hexnl(page_base_addr(page));
 	if (page_base_addr(page) != 0) {
 		return;
 	} else {
@@ -66,7 +68,7 @@ void frame_alloc(page_t *page)
 
 		set_frame(idx * 0x1000);
 
-		page_init(page, (idx << 12));;
+		page_init(page, (idx << 12));
 	}
 }
 

@@ -1,8 +1,8 @@
 #include <core/io.h>
 #include <core/frame.h>
+#include <core/kheap.h>
 
 #include "paging.h"
-#include "kheap.h"
 #include "isr.h"
 
 extern page_table_t BootPageEntry;	// Kernel Page entries declared in boot.S

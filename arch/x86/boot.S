@@ -1,5 +1,5 @@
 global _loader
-extern kernel_main
+extern x86_kernel_main
 
 MODULEALIGN		equ	1<<0
 MEMINFO			equ	1<<1
@@ -118,7 +118,7 @@ StartInHigherHalf:
 
 	add ebx, KERNEL_VIRTUAL_BASE			; set up multiboot struct ptr
 	push ebx
-	call  kernel_main				; call kernel proper
+	call  x86_kernel_main				; call kernel proper
 
 .hang:
 	hlt						; halt machine should kernel return

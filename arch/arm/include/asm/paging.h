@@ -2,6 +2,13 @@
 #define ASM_PAGING_H
 
 #include <core/common.h>
+#include <core/io.h>
+
+#define tlb_invalidate(virt) \
+	do { \
+	asm volatile("mcr p15, 0, %[data], c8, c7, 1" : : [data] "r" (virt)); \
+	} \
+	while (0)
 
 typedef struct page
 {
@@ -19,10 +26,11 @@ typedef struct page
 
 #define page_base_addr(page) page->base_addr
 
-#define page_init(page, phys)			\
+#define page_init(page, phys)		\
 	do {					\
 		page->xn = 1;			\
 		page->id = 1;			\
+		page->ap = 1;			\
 		page->base_addr = (phys >> 12);	\
 	} while(0)
 
@@ -30,7 +38,10 @@ typedef struct page
 	do {					\
 		page->xn = 0;			\
 		page->id = 0;			\
+		page->ap = 0;			\
 		page->base_addr = 0;		\
 	} while(0)
+
+page_t *page_get(u32 address);
 
 #endif // ASM_PAGING_H

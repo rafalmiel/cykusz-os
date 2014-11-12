@@ -3,6 +3,11 @@
 
 #include <core/common.h>
 
+#define tlb_invalidate(virt) \
+	do { \
+	} \
+	while (0)
+
 typedef struct page
 {
 	u32 present	: 1;	// Page present in memory
@@ -28,5 +33,7 @@ typedef struct page
 	do {					\
 		page->frame = 0;		\
 	} while(0)
+
+page_t *page_get(u32 address);
 
 #endif // ASM_PAGING_H

@@ -53,9 +53,9 @@ __attribute__((naked)) void init_sys(void)
 
 	/* Put pointers to empty kernel table for data region
 	 * 0xC0000000 - 0xD0000000 */
-	for (x = (0xC0000000 >> 20); x < (0xC8000000 >> 20); ++x) {
-		s_page_table[x] = ((u32)s_kernel_table + (x - 3072) * 0x400)
-				| 1;
+	for (x = (0xC0000000 >> 20); x < (0xC2000000 >> 20); ++x) {
+		s_page_table[x] = (((u32)s_kernel_table + (x - 3072) * 0x400 - 0xC0000000)
+				  | 1);
 	}
 
 	for (x = 0; x < 256; ++x) {

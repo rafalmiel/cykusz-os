@@ -6,27 +6,39 @@
 
 #include <core/io.h>
 #include <core/timer.h>
-
-//#include <arch/x86/isr.h>
-//#include <arch/x86/paging.h>
-//#include <arch/x86/kheap.h>
+#include <core/kheap.h>
 
 #if defined(__cplusplus)
 extern "C"
 #endif
 
-void kernel_main(/*struct multiboot *multiboot*/)
+void kernel_main()
 {
-//	init_paging(multiboot);
-	init_timer(0x100);
-	init_output();
+	kprint("Hello kernel!!!\n");
 
-//	kprint_hexnl(kmalloc(31));
-//	kprint_hexnl(kmalloc(31));
-//	kprint_hexnl(kmalloc(31));
+	u32 addr = kmalloc(40);
 
-	kprint("Hello!\n");
+	kprint("Allocated new mem at addr: ");
+	kprint_hexnl(addr);
+
+	u32 addr2 = kmalloc(40);
+
+	kprint("Allocated new mem at addr: ");
+	kprint_hexnl(addr2);
+
+	u32 addr3 = kmalloc(40);
+
+	kprint("Allocated new mem at addr: ");
+	kprint_hexnl(addr3);
+
+	kfree(addr2);
+	kfree(addr3);
+	kfree(addr);
+
+	kprint("Free all memory!\n");
+
+	addr3 = kmalloc(40);
+
+	kprint("Allocated new mem at addr: ");
+	kprint_hexnl(addr3);
 }
-
-
-
