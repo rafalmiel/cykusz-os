@@ -2,19 +2,10 @@
 #define PAGING_H
 
 #include <core/common.h>
-#include "multiboot.h"
-#include "isr.h"
+#include <asm/paging.h>
 
-typedef struct page
-{
-	u32 present	: 1;	// Page present in memory
-	u32 rw		: 1;	// Read-only if clear, readwrite if set
-	u32 user	: 1;	// Supervisor level only if clear
-	u32 aaccessed	: 1;	// Has the page been accessed since last refresh
-	u32 dirty	: 1;	// Has the page been written since last refresh
-	u32 unused	: 7;	// Amalgamation of unused and reserved bits
-	u32 frame	: 20;	// Frame address (shift right 12 bits)
-} page_t;
+#include "multiboot.h"
+
 
 typedef struct page_table
 {

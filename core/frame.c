@@ -1,14 +1,12 @@
+#include <core/frame.h>
 #include <core/io.h>
-
-#include "frame.h"
 
 #define INDEX_FROM_BIT(a) ((a) / (8 * 4))
 #define OFFSET_FROM_BIT(a) ((a) % (8 * 4))
 
-static const u32 nframes = 128 * 32;
-static u32 frames[128];			// 16MB
-
-extern u32 __phys_end;			// End of kernel in physical mem
+static u32 s_nframes;
+static u32 *s_frames;		// 16MB
+static u32 s_frames_size;
 
 static void set_frame(u32 frame_addr)
 {
@@ -16,7 +14,7 @@ static void set_frame(u32 frame_addr)
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
 
-	frames[idx] |= (0x1 << off);
+	s_frames[idx] |= (0x1 << off);
 }
 
 static void clear_frame(u32 frame_addr)
@@ -25,7 +23,7 @@ static void clear_frame(u32 frame_addr)
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
 
-	frames[idx] &= ~(0x1 << off);
+	s_frames[idx] &= ~(0x1 << off);
 }
 
 static u32 test_frame(u32 frame_addr)
@@ -33,18 +31,18 @@ static u32 test_frame(u32 frame_addr)
 	u32 frame = frame_addr / 0x1000;
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
-	return (frames[idx] & (0x1 << off));
+	return (s_frames[idx] & (0x1 << off));
 }
 
 static u32 first_frame()
 {
 	u32 i, j;
 
-	for (i = 0; i < INDEX_FROM_BIT(nframes); ++i) {
-		if (frames[i] != 0xFFFFFFFF) {
+	for (i = 0; i < INDEX_FROM_BIT(s_nframes); ++i) {
+		if (s_frames[i] != 0xFFFFFFFF) {
 			for (j = 0; j < 32; ++j) {
 				u32 toTest = 0x1 << j;
-				if (!(frames[i] & toTest)) {
+				if (!(s_frames[i] & toTest)) {
 					return i * 4 * 8 + j;
 				}
 			}
@@ -56,42 +54,45 @@ static u32 first_frame()
 
 void frame_alloc(page_t *page)
 {
-	if (page->frame != 0) {
+	if (page_base_addr(page) != 0) {
 		return;
 	} else {
 		u32 idx = first_frame();
 
 		if (idx == (u32)-1) {
 			kprint("no frames!");
-			asm volatile("hlt");
+			while(1){}
 		}
 
 		set_frame(idx * 0x1000);
-		page->present = 1;
-		page->rw = 1;
-		page->user = 1;
-		page->frame = idx;
-	}
 
+		page_init(page, (idx << 12));;
+	}
 }
 
 void frame_free(page_t *page)
 {
 	u32 frame;
 
-	if (!(frame = page->frame)) {
+	if (!(frame = page_base_addr(page))) {
 		return;
 	} else {
 		clear_frame(frame);
-		page->frame = 0x0;
+
+		page_clear(page);
 	}
 }
 
-void init_frames()
+void init_frames(u32 *frames_bitmap, u32 frames_size, u32 kernel_end)
 {
-	const u32 fin = ((u32)&__phys_end);
+	const u32 fin = kernel_end;
 
-	memset(frames, 0, 4 * 128);
+	s_frames = frames_bitmap;
+	s_frames_size = frames_size;
+	s_nframes = s_frames_size * 32;
+
+	memset(s_frames, 0, 4 * 128);
+
 	u32 addr = 0;
 	u32 cnt = 0;
 	while (addr < fin) {
@@ -107,9 +108,7 @@ void frame_alloc_at(u32 phys_addr, page_t *page)
 	if (test_frame(phys_addr) == 0) {
 		set_frame(phys_addr);
 
-		page->present = 1;
-		page->rw = 1;
-		page->user = 1;
-		page->frame = phys_addr / 0x1000;
+		page_init(page, phys_addr);
 	}
 }
+

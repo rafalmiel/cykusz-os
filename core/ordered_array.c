@@ -12,7 +12,7 @@ s8 ordarr_lessthan_predicate(ordarr_type_t a, ordarr_type_t b)
 
 #ifndef __arch_arm
 ordarr_t create_ordarr(u32 max_size,
-				     ordarr_lessthan_pred_t less_than)
+		       ordarr_lessthan_pred_t less_than)
 {
 	ordarr_t ret;
 	ret.array = (void*)kmalloc(max_size * sizeof(ordarr_type_t));
@@ -25,7 +25,7 @@ ordarr_t create_ordarr(u32 max_size,
 #endif
 
 ordarr_t place_ordarr(void *addr, u32 max_size,
-				    ordarr_lessthan_pred_t less_than)
+		      ordarr_lessthan_pred_t less_than)
 {
 	ordarr_t ret;
 	ret.array = (ordarr_type_t*)addr;

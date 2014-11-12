@@ -1,7 +1,7 @@
 .section .kernel_table
 .balign 4
 .global __kernel_table
-__kernel_table: .skip 256*64
+__kernel_table: .skip 1024*32
 
 .section .init
 

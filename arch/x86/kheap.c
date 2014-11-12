@@ -1,8 +1,8 @@
 #include <core/io.h>
+#include <core/frame.h>
 
 #include "kheap.h"
 #include "paging.h"
-#include "frame.h"
 
 typedef struct
 {

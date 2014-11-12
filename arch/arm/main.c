@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include <core/io.h>
+#include <core/frame.h>
 #include <core/timer.h>
 
 #include "gpio.h"
@@ -33,6 +34,7 @@ void arm_kernel_main(void)
 	/* Remove identity mapping of 1st MB of ram */
 	remove_pt_mapping(0x00000000);
 
+	init_frames((u32*)0xC0000000, 128, bss_end);
 	init_interrupts();
 
 	gpio_select(GPIO_PIN_ACTLED);
@@ -51,7 +53,7 @@ void arm_kernel_main(void)
 	for (u32 x = 0; x < 32; ++x) {
 		kprint_int(x);
 		kprint(" ");
-		kprint_hexnl(s_kernel_table[x]);
+		kprint_hexnl((u32)s_kernel_table[x]);
 	}
 
 	while(1) {}

@@ -20,9 +20,9 @@ static inline u32 virt_to_phys(u32 virt)
 {
 	/* Temporary hack */
 	return virt - 0xC0000000;
-	u32 val = s_page_table[virt >> 20];
+	/*u32 val = s_page_table[virt >> 20];
 
-	return addr_high(phys) + addr_offset(virt);
+	return addr_high(phys) + addr_offset(virt);*/
 }
 
 static inline void remove_pt_mapping(u32 addr)

@@ -1,12 +1,14 @@
 #include <core/common.h>
 #include <core/io.h>
 
+#include <asm/paging.h>
+
 extern void arm_kernel_main(void);
 
 extern u32 __kernel_table;
 
 u32 *s_page_table = (u32 *const)0x00004000;
-u32 *s_kernel_table = (u32 *const)((u32)&__kernel_table);
+page_t *s_kernel_table = (page_t *const)((u32)&__kernel_table);
 
 extern u32 __kernel_init_start;
 extern u32 __kernel_text_start;
@@ -51,7 +53,7 @@ __attribute__((naked)) void init_sys(void)
 
 	/* Put pointers to empty kernel table for data region
 	 * 0xC0000000 - 0xD0000000 */
-	for (x = (0xC0000000 >> 20); x < (0xD0000000 >> 20); ++x) {
+	for (x = (0xC0000000 >> 20); x < (0xC8000000 >> 20); ++x) {
 		s_page_table[x] = ((u32)s_kernel_table + (x - 3072) * 0x400)
 				| 1;
 	}
@@ -61,15 +63,28 @@ __attribute__((naked)) void init_sys(void)
 
 		if (addr < init_start) {
 			/* Map first 0x8000 as read-write data*/
-			s_kernel_table[x] = addr | 0x0010 | 3;
+			s_kernel_table[x].xn = 1;
+			s_kernel_table[x].id = 1;
+			s_kernel_table[x].ap = 3;
+			s_kernel_table[x].base_addr = x;
 		} else if (addr < table_start) {
 			/* Map kernel code as executable read only*/
-			s_kernel_table[x] = addr | 0x0230 | 2;
+			s_kernel_table[x].xn = 0;
+			s_kernel_table[x].id = 1;
+			s_kernel_table[x].ap = 0x1;
+			s_kernel_table[x].apx = 1;
+			s_kernel_table[x].base_addr = x;
 		} else if (addr < bss_end) {
 			/* Map kernel data as not executable read-write*/
-			s_kernel_table[x] = addr | 0x0010 | 3;
+			s_kernel_table[x].id = 1;
+			s_kernel_table[x].xn = 1;
+			s_kernel_table[x].ap = 0x1;
+			s_kernel_table[x].base_addr = x;
 		} else {
-			s_kernel_table[x] = 0;
+			s_kernel_table[x].id = 0;
+			s_kernel_table[x].xn = 0;
+			s_kernel_table[x].ap = 0;
+			s_kernel_table[x].base_addr = 0;
 		}
 	}
 

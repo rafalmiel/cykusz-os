@@ -1,8 +1,9 @@
 #include <core/io.h>
+#include <core/frame.h>
 
 #include "paging.h"
 #include "kheap.h"
-#include "frame.h"
+#include "isr.h"
 
 extern page_table_t BootPageEntry;	// Kernel Page entries declared in boot.S
 extern u32 BootPageDirectory;		// Kernel Page Dir declared in boot.S
@@ -12,6 +13,8 @@ static page_directory_t kernel_pd;
 static heap_t heap;
 
 extern u32 __phys_end;
+
+static u32 s_frames[128];
 
 static u32 s_current_end = (u32)&__phys_end;
 
@@ -53,7 +56,7 @@ void init_paging(struct multiboot *multiboot)
 {
 	register_interrupt_handler(14, page_fault);
 
-	init_frames();
+	init_frames(s_frames, 128, s_current_end);
 
 	memset(&kernel_pd, 0, sizeof kernel_pd);
 
