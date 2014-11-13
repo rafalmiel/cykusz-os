@@ -96,7 +96,8 @@ static void expand(u32 new_size, heap_t *heap)
 	u32 i = old_size;
 
 	while (i < new_size) {
-		frame_alloc(page_get(heap->start_address + i));
+		frame_alloc(page_get(heap->start_address + i),
+			    heap->start_address + i);
 		i += 0x1000;
 	}
 
@@ -114,7 +115,8 @@ static u32 contract(u32 new_size, heap_t *heap)
 	u32 i = old_size - 0x1000;
 
 	while (new_size < i) {
-		frame_free(page_get(heap->start_address + i));
+		frame_free(page_get(heap->start_address + i),
+			   heap->start_address + i);
 		i -= 0x1000;
 	}
 
@@ -265,10 +267,6 @@ static void *alloc(u32 size, u8 page_align, heap_t *heap)
 		/* Create footer only if hole is not at the end address */
 		if ((u32)hole_hdr + hole_hdr->size < heap->end_address) {
 			prepare_footer(hole_hdr);
-			if (size > 6) {
-				kprint("HALT\n");
-				//while (1) {}
-			}
 		}
 
 		ordarr_insert((void*)hole_hdr, &heap->index);
@@ -377,9 +375,13 @@ void init_heap(heap_t *heap, u32 start, u32 end, u32 max, u8 supervisor,
 	heap->index = place_ordarr((void*)start, HEAP_INDEX_SIZE,
 					  &header_t_less_than);
 
+
 	start += sizeof(ordarr_type_t) * HEAP_INDEX_SIZE;
 
 	start = align_4K(start);
+
+	kprint("Heap start: "); kprint_hexnl(start);
+	kprint("Heap end:   "); kprint_hexnl(max);
 
 	heap->start_address = start;
 	heap->end_address = end;

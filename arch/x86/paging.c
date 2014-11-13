@@ -79,7 +79,7 @@ void init_paging(struct multiboot *multiboot)
 	 * Allocate physical memory for initial heap size
 	 */
 	for (u32 i = 0xD0000000; i < 0xD0090000; i += 0x1000)
-		frame_alloc(page_get(i));
+		frame_alloc(page_get(i), i);
 
 	/**
 	 * Max kernel heap size is 256MB
@@ -115,6 +115,6 @@ void paging_identity_map_to(u32 phys_address)
 
 		page_t *page = page_get(addr);
 
-		frame_alloc_at(s_current_end, page);
+		frame_alloc_at(page, s_current_end, addr);
 	}
 }

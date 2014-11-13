@@ -14,6 +14,7 @@ extern "C"
 
 void kernel_main()
 {
+	u32 phys;
 	kprint("Hello kernel!!!\n");
 
 	u32 addr = kmalloc(40);
@@ -37,8 +38,17 @@ void kernel_main()
 
 	kprint("Free all memory!\n");
 
-	addr3 = kmalloc(40);
+	addr3 = kmalloc_ap(40, &phys);
 
 	kprint("Allocated new mem at addr: ");
-	kprint_hexnl(addr3);
+	kprint_hex(addr3);
+	kprint(". Physical addr: ");
+	kprint_hexnl(phys);
+
+	u32 addr4 = kmalloc(40);
+
+	kprint("Allocated new mem at addr: ");
+	kprint_hexnl(addr4);
+
+	init_timer(0x100);
 }

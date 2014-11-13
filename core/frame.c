@@ -52,7 +52,7 @@ static u32 first_frame()
 	return -1;
 }
 
-void frame_alloc(page_t *page)
+void frame_alloc(page_t *page, u32 virt)
 {
 	//kprint("Page base addr: ");
 	//kprint_hexnl(page_base_addr(page));
@@ -69,10 +69,11 @@ void frame_alloc(page_t *page)
 		set_frame(idx * 0x1000);
 
 		page_init(page, (idx << 12));
+		tlb_invalidate(virt);
 	}
 }
 
-void frame_free(page_t *page)
+void frame_free(page_t *page, u32 virt)
 {
 	u32 frame;
 
@@ -82,6 +83,7 @@ void frame_free(page_t *page)
 		clear_frame(frame);
 
 		page_clear(page);
+		tlb_invalidate(virt);
 	}
 }
 
@@ -105,12 +107,13 @@ void init_frames(u32 *frames_bitmap, u32 frames_size, u32 kernel_end)
 }
 
 
-void frame_alloc_at(u32 phys_addr, page_t *page)
+void frame_alloc_at(page_t *page, u32 phys_addr, u32 virt)
 {
 	if (test_frame(phys_addr) == 0) {
 		set_frame(phys_addr);
 
 		page_init(page, phys_addr);
+		tlb_invalidate(virt);
 	}
 }
 

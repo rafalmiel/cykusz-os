@@ -26,7 +26,7 @@ typedef struct page
 
 #define page_base_addr(page) page->base_addr
 
-#define page_init(page, phys)		\
+#define page_init(page, phys)			\
 	do {					\
 		page->xn = 1;			\
 		page->id = 1;			\

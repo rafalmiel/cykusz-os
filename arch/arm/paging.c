@@ -17,7 +17,8 @@ page_t *page_get(u32 address)
 	page_t *page = 0;
 
 	if (s_page_table[idx] & 1) {
-		u32 addr = ((s_page_table[idx] & (u32)~(0b1111111111)) + 0xC0000000);
+		u32 addr = ((s_page_table[idx] & (u32)~(0b1111111111))
+			    + 0xC0000000);
 
 		page = (page_t *)addr;
 
@@ -39,8 +40,7 @@ void init_paging()
 	 */
 	for (u32 i = heap_start; i < (heap_start + 0x90000); i += 0x1000) {
 		//if (i % 10 == 0) kprint_hexnl(i);
-		frame_alloc(page_get(i));
-		tlb_invalidate(i);
+		frame_alloc(page_get(i), i);
 	}
 
 	memset((void*)heap_start, 0, 0x90000);
