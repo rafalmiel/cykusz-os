@@ -33,17 +33,23 @@ void init_paging()
 	kprint("Init paging\n");
 	u32 bss_end = (u32)&__kernel_bss_end;
 	u32 heap_start = align_4K(bss_end) + 0xC0000000;
+
 	init_frames((u32*)0xC0000000, 128, (u32)&__kernel_bss_end);
 
 	/**
 	 * Allocate physical memory for initial heap size
 	 */
+	kprint_hexnl(heap_start);
+	kprint_hexnl(heap_start + 0x90000);
 	for (u32 i = heap_start; i < (heap_start + 0x90000); i += 0x1000) {
 		//if (i % 10 == 0) kprint_hexnl(i);
 		frame_alloc(page_get(i), i);
 	}
 
+	kprint("memset\n");
 	memset((void*)heap_start, 0, 0x90000);
+
+	kprint("memset\n");
 
 	/**
 	 * Max kernel heap size is 32MB

@@ -5,6 +5,8 @@
 #include <core/timer.h>
 #include <core/kheap.h>
 
+#include <drivers/hcd/dwc/dwc.h>
+
 #include "gpio.h"
 #include "uart.h"
 #include "timer.h"
@@ -12,6 +14,8 @@
 #include "mmu.h"
 #include "paging.h"
 #include "barrier.h"
+
+#define USB_BASE (IO_BASE + 0x00980000)
 
 extern void kernel_main();
 extern u32 __kernel_init_start;
@@ -23,7 +27,7 @@ extern u32 __kernel_bss_end;
 
 extern u32 __kernel_table;
 
-static u32 *s_kernel_table = (u32 *const)(0xB000 + 0xC0000000);
+//static u32 *s_kernel_table = (u32 *const)(0xB000 + 0xC0000000);
 
 void arm_kernel_main(void)
 {
@@ -51,6 +55,9 @@ void arm_kernel_main(void)
 	kprint("Bss   start: "); kprint_hexnl(bss_start);
 	kprint("Bss     end: "); kprint_hexnl(bss_end);
 	kprint("\n=================================\n\n");
+
+	init_dwc(USB_BASE);
+
 	kernel_main();
 
 

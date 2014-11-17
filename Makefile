@@ -3,13 +3,14 @@ ARCH		?= x86
 
 include Makefile.$(ARCH)
 
-FLAGS		= -std=gnu11 -ffreestanding -O2 -nostdlib -Wall -Wextra \
+FLAGS		= -std=gnu11 -ffreestanding -O3 -nostdlib -Wall -Wextra \
 			-I. -Iinclude -Iarch/$(ARCH)/include -D__arch_$(ARCH)
-LD_FLAGS	= -ffreestanding -O2 -nostdlib -Wl,--build-id=none
+LD_FLAGS	= -ffreestanding -O3 -nostdlib -Wl,--build-id=none
 
 PROJ_DIRS	:= . \
 		   core \
-		   arch/$(ARCH)
+		   arch/$(ARCH) \
+		   drivers/usb/hcd/dwc
 
 C_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.c")
 ASM_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.S")

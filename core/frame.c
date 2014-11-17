@@ -95,7 +95,7 @@ void init_frames(u32 *frames_bitmap, u32 frames_size, u32 kernel_end)
 	s_frames_size = frames_size;
 	s_nframes = s_frames_size * 32;
 
-	memset(s_frames, 0, 4 * 128);
+	memset(s_frames, 0, s_frames_size);
 
 	u32 addr = 0;
 	u32 cnt = 0;

@@ -35,8 +35,8 @@ char *strcat(char *dest, const char *src)
 
 void *memset(void *ptr, int value, u32 size)
 {
-	u8 *t = (u8*)ptr;
-	for(; size > 0; --size) *t++ = value;
+	u32 *t = (u32*)ptr;
+	for(; size > 0; size -=4) *t++ = value;
 	return ptr;
 }
 
