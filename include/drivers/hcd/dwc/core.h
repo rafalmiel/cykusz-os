@@ -64,21 +64,21 @@ typedef union dwc_otg_core_grstctl_reg {
 		volatile enum CoreFifoFlush {
 			transmit_fifo_flush_non_periodic = 0,
 			transmit_fifo_flush_periodic1 = 1,
-			transmic_fifo_flush_periodic2 = 2,
-			transmic_fifo_flush_periodic3 = 3,
-			transmic_fifo_flush_periodic4 = 4,
-			transmic_fifo_flush_periodic5 = 5,
-			transmic_fifo_flush_periodic6 = 6,
-			transmic_fifo_flush_periodic7 = 7,
-			transmic_fifo_flush_periodic8 = 8,
-			transmic_fifo_flush_periodic9 = 9,
-			transmic_fifo_flush_periodic10 = 10,
-			transmic_fifo_flush_periodic11 = 11,
-			transmic_fifo_flush_periodic12 = 12,
-			transmic_fifo_flush_periodic13 = 13,
-			transmic_fifo_flush_periodic14 = 14,
-			transmic_fifo_flush_periodic15 = 15,
-			transmic_fifo_flush_all = 16,
+			transmit_fifo_flush_periodic2 = 2,
+			transmit_fifo_flush_periodic3 = 3,
+			transmit_fifo_flush_periodic4 = 4,
+			transmit_fifo_flush_periodic5 = 5,
+			transmit_fifo_flush_periodic6 = 6,
+			transmit_fifo_flush_periodic7 = 7,
+			transmit_fifo_flush_periodic8 = 8,
+			transmit_fifo_flush_periodic9 = 9,
+			transmit_fifo_flush_periodic10 = 10,
+			transmit_fifo_flush_periodic11 = 11,
+			transmit_fifo_flush_periodic12 = 12,
+			transmit_fifo_flush_periodic13 = 13,
+			transmit_fifo_flush_periodic14 = 14,
+			transmit_fifo_flush_periodic15 = 15,
+			transmit_fifo_flush_all = 16,
 		} transmit_fifo_flush_number : 5;
 		volatile u32 __reserved11_29 : 19;
 		volatile u32 dma_request_signal : 1;
@@ -175,10 +175,15 @@ typedef union dwc_otg_core_ghwcfg2_reg {
 		volatile u32 single_point : 1;
 		volatile const enum {
 			high_speed_not_supported = 0,
-			high_speed_ulpi
+			high_speed_utmi,
+			high_speed_ulpi,
+			high_speed_utmi_ulpi,
 		} high_speed_phy : 2;
 		volatile const enum {
-			full_speed_ulpi = 2
+			full_speed_physical0 = 0,
+			full_speed_dedicated = 1,
+			full_speed_physical2 = 2,
+			full_speed_physical3 = 3,
 		} full_speed_phy : 2;
 		volatile const u32 endpoints_count : 4;
 		volatile const u32 host_channels_count : 4;
@@ -265,7 +270,10 @@ typedef union dwc_otg_core_gahbcfg_reg {
 		volatile u32 __reserved9_20 : 12;
 		volatile u32 remmemsupp : 1;
 		volatile u32 notialldmawrit : 1;
-		volatile u32 dma_remainder_mode : 1;
+		volatile enum {
+			dma_remainder_mode_incremental = 0,
+			dma_remainder_mode_single = 0,
+		} dma_remainder_mode : 1;
 		volatile u32 __reserved24_31 : 8;
 	} data;
 
@@ -277,8 +285,8 @@ typedef union dwc_otg_core_gusbcfg_reg {
 
 	volatile struct {
 		volatile u32 toutcal : 3;
-		volatile const u32 phy_interface : 1;
-		volatile const enum {
+		volatile u32 phy_interface : 1;
+		volatile enum {
 			umode_ulpi = 0,
 			umode_utmi = 1
 		} umode : 1;
@@ -429,7 +437,7 @@ typedef union dwc_otg_host_hcfg_reg {
 		volatile u32 frame_list_entries : 2;
 		volatile u32 periodic_schedule_enable : 1;
 		volatile const u32 periodic_schedule_status : 1;
-		volatile u32 __reserved28_30 : 4;
+		volatile u32 __reserved28_30 : 3;
 		volatile u32 mode_chg_time : 1;
 	} data;
 
@@ -535,8 +543,8 @@ typedef union dwc_otg_host_hcchar_reg {
 		volatile u32 packets_per_frame : 2;
 		volatile u32 device_address : 7;
 		volatile u32 odd_frame  : 1;
-		volatile const u32 disable : 1;
-		volatile const u32 enable : 1;
+		volatile u32 disable : 1;
+		volatile u32 enable : 1;
 	} data;
 
 } dwc_otg_host_hcchar_reg_t;
@@ -738,7 +746,7 @@ typedef struct dwc_otg_host_regs {
 	volatile u8 __reserved0x444_0x4FC[0x500 - 0x444];
 
 	/** Channels					(Offset 0x500) */
-	volatile struct {
+	volatile struct channels{
 
 		/** Characteristic Base			(Offset 0x0) */
 		volatile dwc_otg_host_hcchar_reg_t hcchar;
@@ -757,6 +765,8 @@ typedef struct dwc_otg_host_regs {
 
 		/** Dma Address				(Offset 0x14) */
 		volatile u32 hcdma;
+
+		volatile u32 __reserved18;
 
 		/** Dma Buffer				(Offset 0x1C) */
 		volatile u32 hcdmab;

@@ -59,17 +59,3 @@ void leds_start_blinking()
 	}
 }
 
-
-void usb_on()
-{
-	volatile u32* mailbox;
-	u32 result;
-
-	mailbox = (u32*)(IO_BASE + 0x0000B880);
-	while (mailbox[6] & 0x80000000);
-	mailbox[8] = 0x80;
-	do {
-		while (mailbox[6] & 0x40000000);
-	} while (((result = mailbox[0]) & 0xf) != 0);
-	(result == 0x80) ? kprint("USB OK\n") : kprint("USB ERROR\n");
-}

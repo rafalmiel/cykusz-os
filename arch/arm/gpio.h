@@ -23,8 +23,6 @@ void gpio_pwrled_off();
 
 void leds_start_blinking();
 
-void usb_on(void);
-
 /*
  * delay function
  * int32_t delay: number of cycles to delay
