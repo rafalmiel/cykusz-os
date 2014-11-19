@@ -5,7 +5,7 @@
 #include <core/timer.h>
 #include <core/kheap.h>
 
-#include <drivers/hcd/dwc/dwc.h>
+#include <drivers/usb/hcd/dwc/dwc.h>
 
 #include "gpio.h"
 #include "uart.h"

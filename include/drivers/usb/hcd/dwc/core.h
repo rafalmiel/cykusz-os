@@ -3,6 +3,8 @@
 
 #include <core/common.h>
 
+#include <drivers/usb/usb.h>
+
 #define DWC_OTG_CHANNEL_COUNT 16
 
 typedef union dwc_otg_core_gotgctl_reg {
@@ -484,26 +486,6 @@ typedef union dwc_otg_host_hptxsts_reg {
 	} data;
 
 } dwc_otg_host_hptxsts_reg_t;
-
-typedef enum {
-	usb_speed_high = 0,
-	usb_speed_full = 1,
-	usb_speed_low = 2,
-} usb_speed_t;
-
-typedef enum {
-	usb_transfer_control = 0,
-	usb_transfer_isochronous = 1,
-	usb_transfer_bulk = 2,
-	usb_transfer_interrupt = 3,
-} usb_transfer_t;
-
-typedef enum {
-	usb_direction_host_to_device = 0,
-	usb_direction_out = 0,
-	usb_direction_device_to_host = 1,
-	usb_direction_in = 1,
-} usb_direction_t;
 
 typedef union dwc_otg_host_hprt_reg {
 

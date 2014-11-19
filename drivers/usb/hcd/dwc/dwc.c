@@ -1,7 +1,8 @@
 #include <core/io.h>
 
-#include <drivers/hcd/dwc/core.h>
-#include <drivers/hcd/dwc/dwc.h>
+#include <drivers/usb/hcd/dwc/core.h>
+#include <drivers/usb/hcd/dwc/dwc.h>
+#include <drivers/usb/descriptors.h>
 
 dwc_otg_core_regs_t *core = 0;
 dwc_otg_host_regs_t *host = 0;
@@ -82,6 +83,11 @@ int hcd_receive_fifo_flush()
 
 static void dwc_core_start(void)
 {
+	core->gintmsk.raw = 0;
+	core->gahbcfg.data.glob_int_mask = 0;
+
+	usb_on();
+
 	core->gusbcfg.data.ulpi_drive_external_vbus = 0;
 	core->gusbcfg.data.ts_dline_pulse_enable = 0;
 
@@ -138,8 +144,6 @@ static void dwc_host_start(void)
 
 	kprint("Fifos flushed\n");
 
-
-
 	if (!host->hcfg.data.enable_dma_descriptor) {
 		for (u32 channel = 0;
 		     channel < core->ghwcfg2.data.host_channels_count;
@@ -169,13 +173,16 @@ static void dwc_host_start(void)
 			} while (host->channels[channel].hcchar.data.enable);
 		}
 
-//		for (u32 channel = 0;
-//		     channel < core->ghwcfg2.data.host_channels_count;
-//		     ++channel) {
-//			kprint_hex(host->channels[channel].hcchar.data.enable);
-//			kprint(" ");
-//			kprint_hexnl(host->channels[channel].hcchar.data.disable);
-//		}
+		for (u32 channel = 0;
+		     channel < core->ghwcfg2.data.host_channels_count;
+		     ++channel) {
+			kprint("Channel ");
+			kprint_hex(channel);
+			kprint(" status: ");
+			kprint_hex(host->channels[channel].hcchar.data.enable);
+			kprint(" ");
+			kprint_hexnl(host->channels[channel].hcchar.data.disable);
+		}
 	}
 
 	if (!host->hprt.data.power) {
@@ -204,11 +211,6 @@ void init_dwc(u32 reg_base)
 	core = (dwc_otg_core_regs_t *)reg_base;
 	host = (dwc_otg_host_regs_t *)(reg_base + 0x400);
 	power = (dwc_otg_power_reg_t *)(reg_base + 0xE00);
-
-	core->gintmsk.raw = 0;
-	core->gahbcfg.data.glob_int_mask = 0;
-
-	usb_on();
 
 	dwc_start();
 }
