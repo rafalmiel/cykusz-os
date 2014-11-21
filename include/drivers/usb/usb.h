@@ -67,6 +67,9 @@ static inline u32 usb_size_to_number(usb_packet_size_t size)
 	case usb_packet_size_bits64:
 		return 64;
 	}
+
+	kprint("usb_size_to_number error\n");
+	return 0;
 }
 
 #endif // USB_H

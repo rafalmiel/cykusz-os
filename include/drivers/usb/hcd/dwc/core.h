@@ -551,6 +551,15 @@ typedef union dwc_otg_host_hcsplt_reg {
 
 } dwc_otg_host_hcsplt_reg_t;
 
+typedef enum dwc_otg_packet_id
+{
+	dwc_otg_packet_id_data0 = 0,
+	dwc_otg_packet_id_data1 = 2,
+	dwc_otg_packet_id_data2 = 1,
+	dwc_otg_packet_id_mdata = 3,
+	dwc_otg_packet_id_setup = 3,
+} dwc_otg_packet_id_t;
+
 typedef union dwc_otg_host_hctsiz_reg {
 
 	volatile u32 raw;
@@ -558,13 +567,7 @@ typedef union dwc_otg_host_hctsiz_reg {
 	volatile struct {
 		volatile u32 transfer_size : 19;
 		volatile u32 packet_count : 10;
-		volatile enum packet_id {
-			packet_id_data0 = 0,
-			packet_id_data1 = 2,
-			packet_id_data2 = 1,
-			packet_id_mdata = 3,
-			packet_id_setup = 3,
-		} packet_id : 2;
+		volatile dwc_otg_packet_id_t packet_id : 2;
 		volatile u32 do_ping : 1;
 	} data;
 
@@ -746,7 +749,7 @@ typedef struct dwc_otg_host_regs {
 		volatile dwc_otg_host_hctsiz_reg_t hctsiz;
 
 		/** Dma Address				(Offset 0x14) */
-		volatile u32 hcdma;
+		volatile void *hcdma;
 
 		volatile u32 __reserved18;
 
