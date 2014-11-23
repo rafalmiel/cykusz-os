@@ -492,20 +492,20 @@ typedef union dwc_otg_host_hprt_reg {
 	volatile u32 raw;
 
 	volatile struct {
-		volatile const u32 connect : 1;
-		volatile const u32 connect_detected : 1;
-		volatile const u32 enable : 1;
-		volatile const u32 enable_changed : 1;
-		volatile const u32 over_current : 1;
-		volatile const u32 over_current_changed : 1;
+		volatile u32 connect : 1;
+		volatile u32 connect_detected : 1;
+		volatile u32 enable : 1;
+		volatile u32 enable_changed : 1;
+		volatile u32 over_current : 1;
+		volatile u32 over_current_changed : 1;
 		volatile u32 resume : 1;
-		volatile const u32 suspend : 1;
+		volatile u32 suspend : 1;
 		volatile u32 reset : 1;
 		volatile u32 __reserved9 : 1;
-		volatile const u32 port_line_status : 2;
+		volatile u32 port_line_status : 2;
 		volatile u32 power : 1;
 		volatile u32 test_control : 4;
-		volatile const usb_speed_t speed : 2;
+		volatile usb_speed_t speed : 2;
 		volatile u32 __reserved19_31 : 13;
 	} data;
 

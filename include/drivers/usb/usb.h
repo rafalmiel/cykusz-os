@@ -2,6 +2,7 @@
 #define USB_H
 
 #include <core/common.h>
+#include <core/io.h>
 
 typedef enum {
 	usb_result_ok = 0,
@@ -71,5 +72,9 @@ static inline u32 usb_size_to_number(usb_packet_size_t size)
 	kprint("usb_size_to_number error\n");
 	return 0;
 }
+
+#define USB_MIN(x, y, type) ({ type __x = (x); type __y = (y); __x < __y ? __x : __y; })
+
+#define USB_MAX(x, y, type) ({ type __x = (x); type __y = (y); __x < __y ? __y : __x; })
 
 #endif // USB_H

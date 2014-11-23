@@ -167,7 +167,7 @@ struct usb_endpoint_descriptor
 struct usb_string_descriptor {
 	u8 descriptor_length;
 	enum usb_descriptor_type descriptor_type : 8;
-	u16 data[];
+	u32 data[];
 } __attribute__ ((__packed__));
 
 #endif // USB_DESCRIPTORS_H

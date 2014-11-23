@@ -56,7 +56,7 @@ void arm_kernel_main(void)
 	kprint("Bss     end: "); kprint_hexnl(bss_end);
 	kprint("\n=================================\n\n");
 
-	init_dwc(USB_BASE);
+	//init_dwc(USB_BASE);
 
 	kernel_main();
 

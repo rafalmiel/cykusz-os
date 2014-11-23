@@ -10,9 +10,9 @@
 
 #define USB_REQUEST_TIMEOUT 5000
 
-dwc_otg_core_regs_t *core = 0;
-dwc_otg_host_regs_t *host = 0;
-dwc_otg_power_reg_t *power = 0;
+dwc_otg_core_regs_t *dwc_core = 0;
+dwc_otg_host_regs_t *dwc_host = 0;
+dwc_otg_power_reg_t *dwc_power = 0;
 
 u8 *data_buffer;
 
@@ -43,20 +43,20 @@ static void usb_on()
 void hcd_transmit_channel(u8 channel, void *buffer)
 {
 	dwc_otg_host_hcchar_reg_t ch;
-	host->channels[channel].hcsplt.data.complete_split = 0;
+	dwc_host->channels[channel].hcsplt.data.complete_split = 0;
 
 	if (((u32)buffer & 3) != 0)
 		kprint("warning: buffer not DWORD aligned\n");
 
-	host->channels[channel].hcdma = buffer;
+	dwc_host->channels[channel].hcdma = buffer;
 
-	ch.raw = host->channels[channel].hcchar.raw;
+	ch.raw = dwc_host->channels[channel].hcchar.raw;
 
 	ch.data.packets_per_frame = 1;
 	ch.data.enable = 1;
 	ch.data.disable = 0;
 
-	host->channels[channel].hcchar.raw = ch.raw;
+	dwc_host->channels[channel].hcchar.raw = ch.raw;
 }
 
 usb_result_t hcd_prepare_channel(struct usb_device *device, u8 channel,
@@ -67,14 +67,14 @@ usb_result_t hcd_prepare_channel(struct usb_device *device, u8 channel,
 	dwc_otg_host_hcsplt_reg_t spl;
 	dwc_otg_host_hctsiz_reg_t tsiz;
 
-	if (channel > core->ghwcfg2.data.host_channels_count) {
+	if (channel > dwc_core->ghwcfg2.data.host_channels_count) {
 		kprint("Channel ");
 		kprint_hexnl(channel);
 		kprint(" is not available on this host\n");
 		return usb_error_argument;
 	}
 
-	host->channels[channel].hcint.raw = 0xffffffff;
+	dwc_host->channels[channel].hcint.raw = 0xffffffff;
 
 	ch.raw = 0;
 	ch.data.device_address = pipe->device;
@@ -86,7 +86,7 @@ usb_result_t hcd_prepare_channel(struct usb_device *device, u8 channel,
 	ch.data.enable = 0;
 	ch.data.disable = 0;
 
-	host->channels[channel].hcchar.raw = ch.raw;
+	dwc_host->channels[channel].hcchar.raw = ch.raw;
 
 	spl.raw = 0;
 	if (pipe->speed != usb_speed_high) {
@@ -95,7 +95,7 @@ usb_result_t hcd_prepare_channel(struct usb_device *device, u8 channel,
 		spl.data.port_address = device->port_number;
 	}
 
-	host->channels[channel].hcsplt.raw = spl.raw;
+	dwc_host->channels[channel].hcsplt.raw = spl.raw;
 
 	tsiz.raw = 0;
 	tsiz.data.transfer_size = length;
@@ -114,7 +114,7 @@ usb_result_t hcd_prepare_channel(struct usb_device *device, u8 channel,
 
 	tsiz.data.packet_id = packet_id;
 
-	host->channels[channel].hctsiz.raw = tsiz.raw;
+	dwc_host->channels[channel].hctsiz.raw = tsiz.raw;
 
 	return usb_result_ok;
 }
@@ -188,7 +188,7 @@ usb_result_t hcd_channel_send_wait_one(struct usb_device *device,
 	for (global_tries = 0, actual_tries = 0;
 	     global_tries < 3 && actual_tries < 10;
 	     ++global_tries, ++actual_tries) {
-		host->channels[channel].hcint.raw = 0xffffffff;
+		dwc_host->channels[channel].hcint.raw = 0xffffffff;
 
 		hcd_transmit_channel(channel, (u8*)buffer + buffer_offset);
 
@@ -199,21 +199,21 @@ usb_result_t hcd_channel_send_wait_one(struct usb_device *device,
 				device->error = usb_transfer_error_connection;
 				return usb_error_timeout;
 			}
-			if (!host->channels[channel].hcint.data.halt)
+			if (!dwc_host->channels[channel].hcint.data.halt)
 				micro_delay(10);
 			else
 				break;
 		} while(1);
 
-		if (host->channels[channel].hcsplt.data.split_enable) {
-			if (host->channels[channel].hcint.data.acknowledgement) {
+		if (dwc_host->channels[channel].hcsplt.data.split_enable) {
+			if (dwc_host->channels[channel].hcint.data.acknowledgement) {
 				for (tries = 0; tries < 3; ++tries) {
-					host->channels[channel].hcint.raw = 0xffffffff;
+					dwc_host->channels[channel].hcint.raw = 0xffffffff;
 
-					host->channels[channel].hcsplt.data.complete_split = 1;
+					dwc_host->channels[channel].hcsplt.data.complete_split = 1;
 
-					host->channels[channel].hcchar.data.enable = 1;
-					host->channels[channel].hcchar.data.disable = 0;
+					dwc_host->channels[channel].hcchar.data.enable = 1;
+					dwc_host->channels[channel].hcchar.data.disable = 0;
 
 					timeout = 0;
 					do {
@@ -222,46 +222,46 @@ usb_result_t hcd_channel_send_wait_one(struct usb_device *device,
 							return usb_error_timeout;
 						}
 
-						if (!host->channels[channel].hcint.data.halt)
+						if (!dwc_host->channels[channel].hcint.data.halt)
 							micro_delay(100);
 						else
 							break;
 					} while (1);
-					if (!host->channels[channel].hcint.data.not_yet)
+					if (!dwc_host->channels[channel].hcint.data.not_yet)
 						break;
 				}
 
 				if (tries == 3) {
 					micro_delay(25000);
 					continue;
-				} else if (host->channels[channel].hcint.data.negative_acknowledgement) {
+				} else if (dwc_host->channels[channel].hcint.data.negative_acknowledgement) {
 					global_tries--;
 					micro_delay(25000);
 					continue;
-				} else if (host->channels[channel].hcint.data.transaction_error) {
+				} else if (dwc_host->channels[channel].hcint.data.transaction_error) {
 					micro_delay(25000);
 					continue;
 				}
 
 				if ((result = hcd_channel_interrupt_to_error(device,
-									     host->channels[channel].hcint,
+									     dwc_host->channels[channel].hcint,
 									     0))
 						!= usb_result_ok) {
 					kprint("Request split completion failed\n");
 					return result;
 				}
-			} else if (host->channels[channel].hcint.data.negative_acknowledgement) {
+			} else if (dwc_host->channels[channel].hcint.data.negative_acknowledgement) {
 				global_tries--;
 				micro_delay(25000);
 				continue;
-			} else if (host->channels[channel].hcint.data.transaction_error) {
+			} else if (dwc_host->channels[channel].hcint.data.transaction_error) {
 				micro_delay(25000);
 				continue;
 			}
 		} else {
 			if ((result = hcd_channel_interrupt_to_error(device,
-								     host->channels[channel].hcint,
-								     !host->channels[channel].hcsplt.data.split_enable))
+								     dwc_host->channels[channel].hcint,
+								     !dwc_host->channels[channel].hcsplt.data.split_enable))
 					!= usb_result_ok) {
 				kprint("Request failed\n");
 				return usb_error_retry;
@@ -274,8 +274,8 @@ usb_result_t hcd_channel_send_wait_one(struct usb_device *device,
 	if (global_tries == 3 || actual_tries == 10) {
 		kprint("Request failed 3 times\n");
 		if ((result = hcd_channel_interrupt_to_error(device,
-							     host->channels[channel].hcint,
-							     !host->channels[channel].hcsplt.data.split_enable))
+							     dwc_host->channels[channel].hcint,
+							     !dwc_host->channels[channel].hcsplt.data.split_enable))
 				!= usb_result_ok) {
 			kprint("Request failed\n");
 			return result;
@@ -313,7 +313,7 @@ retry:
 	transfer = 0;
 
 	do {
-		packets = host->channels[channel].hctsiz.data.packet_count;
+		packets = dwc_host->channels[channel].hctsiz.data.packet_count;
 
 		if ((result = hcd_channel_send_wait_one(device, pipe, channel,
 							buffer, buffer_length,
@@ -325,13 +325,13 @@ retry:
 			return result;
 		}
 
-		transfer = buffer_length - host->channels[channel].hctsiz.data.transfer_size;
+		transfer = buffer_length - dwc_host->channels[channel].hctsiz.data.transfer_size;
 
-		if (packets == host->channels[channel].hctsiz.data.packet_count)
+		if (packets == dwc_host->channels[channel].hctsiz.data.packet_count)
 			break;
-	} while (host->channels[channel].hctsiz.data.packet_count > 0);
+	} while (dwc_host->channels[channel].hctsiz.data.packet_count > 0);
 
-	if (packets == host->channels[channel].hctsiz.data.packet_count) {
+	if (packets == dwc_host->channels[channel].hctsiz.data.packet_count) {
 		device->error = usb_transfer_error_connection;
 		kprint("Transfer got stuck\n");
 		return usb_error_device;
@@ -398,10 +398,10 @@ usb_result_t hcd_submit_control_message(struct usb_device *device,
 		}
 
 		if (pipe.direction == usb_direction_in) {
-			if (host->channels[0].hctsiz.data.transfer_size
+			if (dwc_host->channels[0].hctsiz.data.transfer_size
 					< buffer_length) {
 				device->last_transfer = buffer_length -
-						host->channels[0].hctsiz.data.transfer_size;
+						dwc_host->channels[0].hctsiz.data.transfer_size;
 			} else {
 				kprint("Weird transfer\n");
 				device->last_transfer = buffer_length;
@@ -430,7 +430,7 @@ usb_result_t hcd_submit_control_message(struct usb_device *device,
 		return usb_result_ok;
 	}
 
-	if (host->channels[0].hctsiz.data.transfer_size != 0) {
+	if (dwc_host->channels[0].hctsiz.data.transfer_size != 0) {
 		kprint("Warning non zero status transfer!\n");
 	}
 
@@ -448,9 +448,9 @@ int hcd_reset()
 			kprint("HCD: Device hang 1!\n");
 			return -1;
 		}
-	} while (core->grstctl.data.abh_master_idle == 0);
+	} while (dwc_core->grstctl.data.abh_master_idle == 0);
 
-	core->grstctl.data.core_soft = 1;
+	dwc_core->grstctl.data.core_soft = 1;
 
 	count = 0;
 
@@ -459,31 +459,31 @@ int hcd_reset()
 			kprint("HCD: Device hang 2!\n");
 			return -1;
 		}
-	} while (core->grstctl.data.core_soft == 1
-		 || core->grstctl.data.abh_master_idle == 0);
+	} while (dwc_core->grstctl.data.core_soft == 1
+		 || dwc_core->grstctl.data.abh_master_idle == 0);
 
 	return 0;
 }
 
 int hcd_transmit_fifo_flush()
 {
-	core->grstctl.data.transmit_fifo_flush_number = transmit_fifo_flush_all;
-	core->grstctl.data.transmit_fifo_flush = 1;
+	dwc_core->grstctl.data.transmit_fifo_flush_number = transmit_fifo_flush_all;
+	dwc_core->grstctl.data.transmit_fifo_flush = 1;
 
 	do {
 
-	} while (core->grstctl.data.transmit_fifo_flush == 1);
+	} while (dwc_core->grstctl.data.transmit_fifo_flush == 1);
 
 	return 0;
 }
 
 int hcd_receive_fifo_flush()
 {
-	core->grstctl.data.receive_fifo_flush = 1;
+	dwc_core->grstctl.data.receive_fifo_flush = 1;
 
 	do {
 
-	} while (core->grstctl.data.receive_fifo_flush == 1);
+	} while (dwc_core->grstctl.data.receive_fifo_flush == 1);
 
 	return 0;
 }
@@ -492,13 +492,13 @@ static void dwc_core_start(void)
 {
 	data_buffer = (u8*)kmalloc_a(1024);
 
-	core->gintmsk.raw = 0;
-	core->gahbcfg.data.glob_int_mask = 0;
+	dwc_core->gintmsk.raw = 0;
+	dwc_core->gahbcfg.data.glob_int_mask = 0;
 
 	usb_on();
 
-	core->gusbcfg.data.ulpi_drive_external_vbus = 0;
-	core->gusbcfg.data.ts_dline_pulse_enable = 0;
+	dwc_core->gusbcfg.data.ulpi_drive_external_vbus = 0;
+	dwc_core->gusbcfg.data.ts_dline_pulse_enable = 0;
 
 	if (hcd_reset() == 0) {
 		kprint("HCD reset success!\n");
@@ -507,68 +507,68 @@ static void dwc_core_start(void)
 		return;
 	}
 
-	if (core->ghwcfg2.data.high_speed_phy == high_speed_ulpi
-	    && core->ghwcfg2.data.full_speed_phy == full_speed_dedicated) {
+	if (dwc_core->ghwcfg2.data.high_speed_phy == high_speed_ulpi
+	    && dwc_core->ghwcfg2.data.full_speed_phy == full_speed_dedicated) {
 		kprint("Ulpi FSLS configuration: enabled\n");
-		core->gusbcfg.data.ulpi_fsls = 1;
-		core->gusbcfg.data.ulpi_clk_sus_m = 1;
+		dwc_core->gusbcfg.data.ulpi_fsls = 1;
+		dwc_core->gusbcfg.data.ulpi_clk_sus_m = 1;
 	} else {
 		kprint("Ulpi FSLS configuration: disabled\n");
-		core->gusbcfg.data.ulpi_fsls = 0;
-		core->gusbcfg.data.ulpi_clk_sus_m = 0;
+		dwc_core->gusbcfg.data.ulpi_fsls = 0;
+		dwc_core->gusbcfg.data.ulpi_clk_sus_m = 0;
 	}
 
-	core->gahbcfg.data.dma_enable = 1;
+	dwc_core->gahbcfg.data.dma_enable = 1;
 
 	kprint("Dma remainder mode: ");
-	kprint_hexnl(core->gahbcfg.data.dma_remainder_mode);
-	core->gahbcfg.data.dma_remainder_mode = dma_remainder_mode_incremental;
+	kprint_hexnl(dwc_core->gahbcfg.data.dma_remainder_mode);
+	dwc_core->gahbcfg.data.dma_remainder_mode = dma_remainder_mode_incremental;
 	kprint("Operating mode: ");
-	kprint_hexnl(core->ghwcfg2.data.otgmode);
-	core->gusbcfg.data.hnp_capable = 1;
-	core->gusbcfg.data.srp_capable = 1;
+	kprint_hexnl(dwc_core->ghwcfg2.data.otgmode);
+	dwc_core->gusbcfg.data.hnp_capable = 1;
+	dwc_core->gusbcfg.data.srp_capable = 1;
 
 	kprint("HCD Core started!\n");
 }
 
 static void dwc_host_start(void)
 {
-	power->raw = 0;
+	dwc_power->raw = 0;
 
-	host->hcfg.data.clock_rate = clock_rate_30_60MHz;
-	host->hcfg.data.fsls_only = 1;
+	dwc_host->hcfg.data.clock_rate = clock_rate_30_60MHz;
+	dwc_host->hcfg.data.fsls_only = 1;
 
-	core->grxfsiz = 0x1000;
+	dwc_core->grxfsiz = 0x1000;
 
-	core->gnptxfsiz.data.depth = 0x1000;
-	core->gnptxfsiz.data.start_address = 0x1000;
+	dwc_core->gnptxfsiz.data.depth = 0x1000;
+	dwc_core->gnptxfsiz.data.start_address = 0x1000;
 
-	core->hptxfsiz.data.depth = 0x1000;
-	core->hptxfsiz.data.start_address = 0x2000;
+	dwc_core->hptxfsiz.data.depth = 0x1000;
+	dwc_core->hptxfsiz.data.start_address = 0x2000;
 
-	core->gotgctl.data.host_set_hnp_enable = 1;
+	dwc_core->gotgctl.data.host_set_hnp_enable = 1;
 
 	hcd_transmit_fifo_flush();
 	hcd_receive_fifo_flush();
 
 	kprint("Fifos flushed\n");
 
-	if (!host->hcfg.data.enable_dma_descriptor) {
+	if (!dwc_host->hcfg.data.enable_dma_descriptor) {
 		for (u32 channel = 0;
-		     channel < core->ghwcfg2.data.host_channels_count;
+		     channel < dwc_core->ghwcfg2.data.host_channels_count;
 		     ++channel) {
-			host->channels[channel].hcchar.data.enable = 0;
-			host->channels[channel].hcchar.data.disable = 1;
-			host->channels[channel].hcchar.data.endpoint_direction =
+			dwc_host->channels[channel].hcchar.data.enable = 0;
+			dwc_host->channels[channel].hcchar.data.disable = 1;
+			dwc_host->channels[channel].hcchar.data.endpoint_direction =
 					usb_direction_in;
 		}
 
 		for (u32 channel = 0;
-		     channel < core->ghwcfg2.data.host_channels_count;
+		     channel < dwc_core->ghwcfg2.data.host_channels_count;
 		     ++channel) {
-			host->channels[channel].hcchar.data.enable = 1;
-			host->channels[channel].hcchar.data.disable = 1;
-			host->channels[channel].hcchar.data.endpoint_direction =
+			dwc_host->channels[channel].hcchar.data.enable = 1;
+			dwc_host->channels[channel].hcchar.data.disable = 1;
+			dwc_host->channels[channel].hcchar.data.endpoint_direction =
 					usb_direction_in;
 
 			u32 timeout = 0;
@@ -579,34 +579,34 @@ static void dwc_host_start(void)
 					kprint_hexnl(channel);
 					break;
 				}
-			} while (host->channels[channel].hcchar.data.enable);
+			} while (dwc_host->channels[channel].hcchar.data.enable);
 		}
 
 		for (u32 channel = 0;
-		     channel < core->ghwcfg2.data.host_channels_count;
+		     channel < dwc_core->ghwcfg2.data.host_channels_count;
 		     ++channel) {
 			kprint("Channel ");
 			kprint_hex(channel);
 			kprint(" status: ");
-			kprint_hex(host->channels[channel].hcchar.data.enable);
+			kprint_hex(dwc_host->channels[channel].hcchar.data.enable);
 			kprint(" ");
-			kprint_hexnl(host->channels[channel].hcchar.data.disable);
+			kprint_hexnl(dwc_host->channels[channel].hcchar.data.disable);
 		}
 	}
 
-	if (!host->hprt.data.power) {
+	if (!dwc_host->hprt.data.power) {
 		kprint("Powering up port\n");
-		host->hprt.data.power = 1;
+		dwc_host->hprt.data.power = 1;
 	}
 
-	host->hprt.data.reset = 1;
+	dwc_host->hprt.data.reset = 1;
 
 	micro_delay(50000);
 
-	host->hprt.data.reset = 0;
+	dwc_host->hprt.data.reset = 0;
 
 	kprint("HCD succesfully started: ");
-	kprint_hexnl(host->hprt.data.power);
+	kprint_hexnl(dwc_host->hprt.data.power);
 }
 
 static void dwc_start(void)
@@ -617,9 +617,9 @@ static void dwc_start(void)
 
 void init_dwc(u32 reg_base)
 {
-	core = (dwc_otg_core_regs_t *)reg_base;
-	host = (dwc_otg_host_regs_t *)(reg_base + 0x400);
-	power = (dwc_otg_power_reg_t *)(reg_base + 0xE00);
+	dwc_core = (dwc_otg_core_regs_t *)reg_base;
+	dwc_host = (dwc_otg_host_regs_t *)(reg_base + 0x400);
+	dwc_power = (dwc_otg_power_reg_t *)(reg_base + 0xE00);
 
 	dwc_start();
 }
