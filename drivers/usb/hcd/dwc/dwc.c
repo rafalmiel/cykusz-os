@@ -354,7 +354,8 @@ usb_result_t hcd_submit_control_message(struct usb_device *device,
 	struct usb_pipe_address temp_pipe;
 
 	if (pipe.device == 0/*root hub dev number*/) {
-		return usb_result_ok; /*TODO: process root hub message */
+		return usb_process_root_hub_message(device, pipe, buffer,
+						    buffer_length, request);
 	}
 
 	device->error = usb_transfer_error_processing;
