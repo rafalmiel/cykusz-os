@@ -14,6 +14,8 @@ dwc_otg_core_regs_t *dwc_core = 0;
 dwc_otg_host_regs_t *dwc_host = 0;
 dwc_otg_power_reg_t *dwc_power = 0;
 
+extern u32 usb_root_hub_dev_number;
+
 u8 *data_buffer;
 
 void micro_delay(u32 delay)
@@ -353,7 +355,7 @@ usb_result_t hcd_submit_control_message(struct usb_device *device,
 	usb_result_t result;
 	struct usb_pipe_address temp_pipe;
 
-	if (pipe.device == 0/*root hub dev number*/) {
+	if (pipe.device == usb_root_hub_dev_number) {
 		return usb_process_root_hub_message(device, pipe, buffer,
 						    buffer_length, request);
 	}

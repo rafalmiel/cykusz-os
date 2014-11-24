@@ -4,6 +4,8 @@
 #include <core/common.h>
 #include <core/io.h>
 
+void usb_initialise(u32 reg_base);
+
 typedef enum {
 	usb_result_ok = 0,
 	usb_error_general = -1,

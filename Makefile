@@ -11,7 +11,10 @@ LD_FLAGS	= -ffreestanding -O3 -nostdlib -Wl,--build-id=none
 PROJ_DIRS	:= . \
 		   core \
 		   arch/$(ARCH) \
-		   drivers/usb/hcd/dwc
+		   drivers/usb/hcd/dwc \
+		   drivers/usb \
+		   drivers/usb/device \
+		   drivers/usb/device/hid
 
 C_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.c")
 ASM_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.S")

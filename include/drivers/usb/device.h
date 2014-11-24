@@ -10,6 +10,13 @@
 
 #define USB_MAX_ENDPOINTS_PER_DEVICE 16
 
+#define USB_INTERFACE_CLASS_ATTACH_COUNT 16
+
+struct usb_device;
+
+extern usb_result_t (*usb_interface_attach_class[USB_INTERFACE_CLASS_ATTACH_COUNT])
+			(struct usb_device *device, u32 interface_number);
+
 enum usb_device_status
 {
 	usb_device_status_attached = 0,

@@ -116,4 +116,8 @@ enum usb_hub_feature
 	usb_hub_feature_overcurrent = 1
 };
 
+void usb_hub_load();
+
+usb_result_t usb_hub_attach(struct usb_device *device, u32 interface_number);
+
 #endif // USB_HUB_H

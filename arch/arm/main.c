@@ -5,7 +5,7 @@
 #include <core/timer.h>
 #include <core/kheap.h>
 
-#include <drivers/usb/hcd/dwc/dwc.h>
+#include <drivers/usb/usb.h>
 
 #include "gpio.h"
 #include "uart.h"
@@ -56,7 +56,7 @@ void arm_kernel_main(void)
 	kprint("Bss     end: "); kprint_hexnl(bss_end);
 	kprint("\n=================================\n\n");
 
-	init_dwc(USB_BASE);
+	usb_initialise(USB_BASE);
 
 	kernel_main();
 
