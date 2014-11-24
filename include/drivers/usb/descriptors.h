@@ -1,7 +1,7 @@
 #ifndef USB_DESCRIPTORS_H
 #define USB_DESCRIPTORS_H
 
-#include <drivers/usb/usb.h>
+#include <drivers/usb/types.h>
 
 enum usb_descriptor_type
 {

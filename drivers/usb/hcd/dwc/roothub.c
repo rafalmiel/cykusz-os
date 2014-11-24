@@ -263,15 +263,18 @@ usb_result_t usb_process_root_hub_message(struct usb_device *device,
 			switch ((enum usb_descriptor_type)((request->value >> 8) & 0xff)) {
 			case usb_descriptor_type_device:
 				memcpy(buffer, &dev_descriptor,
-				       reply_length = USB_MIN(sizeof(struct usb_device_descriptor),
+				       reply_length = USB_MIN(sizeof(dev_descriptor),
 							      buffer_length,
 							      u32));
 				break;
 			case usb_descriptor_type_configuration:
+				kprint("get configuration\n");
 				memcpy(buffer, &config_descriptor,
-				       reply_length = USB_MIN(sizeof(struct usb_configuration_descriptor),
+				       reply_length = USB_MIN(sizeof(config_descriptor),
 							      buffer_length,
 							      u32));
+				kprint_hexnl(buffer_length);
+				kprint_hexnl(sizeof(config_descriptor));
 				break;
 			case usb_descriptor_type_string:
 				switch (request->value & 0xff) {
@@ -329,6 +332,9 @@ usb_result_t usb_process_root_hub_message(struct usb_device *device,
 	if (result == usb_error_argument) {
 		device->error |= usb_transfer_error_stall;
 	}
+
+	kprint("Reply length: ");
+	kprint_hexnl(reply_length);
 
 	device->error &= ~usb_transfer_error_processing;
 	device->last_transfer = reply_length;

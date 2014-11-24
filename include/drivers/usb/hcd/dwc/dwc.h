@@ -17,6 +17,11 @@ void micro_delay(u32 delay);
 
 void init_dwc(u32 reg_base);
 
+usb_result_t hcd_submit_control_message(struct usb_device *device,
+					struct usb_pipe_address pipe,
+					void *buffer, u32 buffer_length,
+					struct usb_device_request *request);
+
 usb_result_t usb_process_root_hub_message(struct usb_device *device,
 					  struct usb_pipe_address pipe,
 					  void *buffer, u32 buffer_length,

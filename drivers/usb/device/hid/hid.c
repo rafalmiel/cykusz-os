@@ -7,6 +7,7 @@ void usb_hid_load()
 
 usb_result_t usb_hid_attach(struct usb_device *device, u32 interface_number)
 {
+	kprint("Attaching hid driver\n");
 	(void)device;
 	(void)interface_number;
 	return usb_result_ok;

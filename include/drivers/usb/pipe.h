@@ -1,7 +1,7 @@
 #ifndef USB_PIPE_H
 #define USB_PIPE_H
 
-#include <drivers/usb/usb.h>
+#include <drivers/usb/types.h>
 
 struct usb_pipe_address
 {

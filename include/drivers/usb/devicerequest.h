@@ -1,7 +1,7 @@
 #ifndef USB_DEVICEREQUEST_H
 #define USB_DEVICEREQUEST_H
 
-#include <drivers/usb/usb.h>
+#include <drivers/usb/types.h>
 
 typedef enum usb_device_request_request
 {

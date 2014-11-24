@@ -2,7 +2,7 @@
 #define USB_DEVICE_H
 
 #include <drivers/usb/descriptors.h>
-#include <drivers/usb/usb.h>
+#include <drivers/usb/types.h>
 
 #define USB_MAX_CHILDREN_PER_DEVICE 10
 
@@ -72,11 +72,11 @@ struct usb_device
 				      struct usb_device *child)
 						__attribute__((aligned(4)));
 
-	void (*device_child_reset)(struct usb_device *device,
+	usb_result_t (*device_child_reset)(struct usb_device *device,
 				   struct usb_device *child)
 						__attribute__((aligned(4)));
 
-	void (*device_check_connection)(struct usb_device *device,
+	usb_result_t (*device_check_connection)(struct usb_device *device,
 					struct usb_device *child)
 						__attribute__((aligned(4)));
 
