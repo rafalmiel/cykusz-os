@@ -585,16 +585,16 @@ static void dwc_host_start(void)
 			} while (dwc_host->channels[channel].hcchar.data.enable);
 		}
 
-		for (u32 channel = 0;
-		     channel < dwc_core->ghwcfg2.data.host_channels_count;
-		     ++channel) {
-			kprint("Channel ");
-			kprint_hex(channel);
-			kprint(" status: ");
-			kprint_hex(dwc_host->channels[channel].hcchar.data.enable);
-			kprint(" ");
-			kprint_hexnl(dwc_host->channels[channel].hcchar.data.disable);
-		}
+//		for (u32 channel = 0;
+//		     channel < dwc_core->ghwcfg2.data.host_channels_count;
+//		     ++channel) {
+//			kprint("Channel ");
+//			kprint_hex(channel);
+//			kprint(" status: ");
+//			kprint_hex(dwc_host->channels[channel].hcchar.data.enable);
+//			kprint(" ");
+//			kprint_hexnl(dwc_host->channels[channel].hcchar.data.disable);
+//		}
 	}
 
 	if (!dwc_host->hprt.data.power) {

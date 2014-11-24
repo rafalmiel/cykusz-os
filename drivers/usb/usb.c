@@ -296,9 +296,6 @@ static usb_result_t usb_set_configuration(struct usb_device *device, u8 conf)
 {
 	usb_result_t result;
 
-	kprint("Device status: ");
-	kprint_hexnl(device->status);
-
 	if (device->status != usb_device_status_addressed) {
 		kprint("Illegal attempt to configure device\n");
 		return usb_error_device;
@@ -357,9 +354,6 @@ static usb_result_t usb_configure(struct usb_device *device, u8 configuration)
 		return result;
 	}
 
-	kprint("Configuration total length: ");
-	kprint_hexnl(device->configuration.total_length);
-
 	if ((full_descriptor = (void*)kmalloc(device->configuration.total_length)) == 0) {
 		kprint("Failed to allocate space for descriptor.\n");
 		return usb_error_memory;
@@ -388,7 +382,6 @@ static usb_result_t usb_configure(struct usb_device *device, u8 configuration)
 	     header = (struct usb_descriptor_header*)((u8*)header + header->descriptor_length)) {
 		switch (header->descriptor_type) {
 		case usb_descriptor_type_interface:
-			kprint("Bind interface\n");
 			interface = (struct usb_interface_descriptor*)header;
 			if (last_interface != interface->number) {
 				memcpy((void*)&device->interfaces[last_interface = interface->number],
@@ -401,7 +394,6 @@ static usb_result_t usb_configure(struct usb_device *device, u8 configuration)
 			}
 			break;
 		case usb_descriptor_type_endpoint:
-			kprint("Bind endpoint\n");
 			if (is_alternate)
 				break;
 			if (last_interface == USB_MAX_INTERFACES_PER_DEVICE
@@ -415,7 +407,6 @@ static usb_result_t usb_configure(struct usb_device *device, u8 configuration)
 			       sizeof(struct usb_endpoint_descriptor));
 			break;
 		default:
-			kprint("Bind default");
 			if (header->descriptor_length == 0)
 				goto header_loop_break;
 
@@ -526,8 +517,6 @@ usb_result_t usb_attach_device(struct usb_device *device)
 	if (buffer != 0)
 		kfree((u32)buffer);
 
-	kprint("Configuring device\n");
-
 	if ((result = usb_configure(device, 0)) != usb_result_ok) {
 		kprint("Failed to configure device\n");
 		return usb_result_ok;
@@ -547,12 +536,9 @@ usb_result_t usb_attach_device(struct usb_device *device)
 		}
 	}
 
-	kprint("starting attached interface!\n");
-	kprint_hexnl(device->interfaces[0].int_class);
-
 	if (device->interfaces[0].int_class < USB_INTERFACE_CLASS_ATTACH_COUNT
 	    && usb_interface_attach_class[device->interfaces[0].int_class]) {
-		kprint("starting attached interface!\n");
+		kprint("Starting driver!\n");
 		if ((result = usb_interface_attach_class[device->interfaces[0].int_class](device, 0))
 				!= usb_result_ok) {
 			kprint("Could not start the driver\n");
