@@ -6,6 +6,7 @@
 #include <core/kheap.h>
 
 #include <drivers/usb/usb.h>
+#include <drivers/usb/hcd/dwc/dwc.h>
 
 #include "gpio.h"
 #include "uart.h"
@@ -59,6 +60,12 @@ void arm_kernel_main(void)
 	usb_initialise(USB_BASE);
 
 	kernel_main();
+
+	while (1) {
+		usb_check_for_change();
+		micro_delay(5000);
+	}
+
 
 
 //	for (u32 x = (0xC0000000 >> 20); x < (0xC2000000 >> 20); ++x) {

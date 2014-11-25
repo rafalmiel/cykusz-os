@@ -100,6 +100,8 @@ enum usb_hub_port_feature
 	usb_hub_port_feature_reset_change = 20,
 };
 
+#define USB_DEVICE_DRIVER_HUB 0x48554230
+
 struct usb_hub_device
 {
 	struct usb_driver_data_header header;
@@ -117,6 +119,10 @@ enum usb_hub_feature
 };
 
 void usb_hub_load();
+
+usb_result_t usb_hub_port_reset(struct usb_device *device, u8 port);
+
+usb_result_t usb_hub_check_connection(struct usb_device *device, u8 port);
 
 usb_result_t usb_hub_attach(struct usb_device *device, u32 interface_number);
 

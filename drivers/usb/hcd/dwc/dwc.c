@@ -360,6 +360,8 @@ usb_result_t hcd_submit_control_message(struct usb_device *device,
 						    buffer_length, request);
 	}
 
+	kprint("SENDING NON ROOT CTRL MSG\n");
+
 	device->error = usb_transfer_error_processing;
 	device->last_transfer = 0;
 
@@ -438,6 +440,7 @@ usb_result_t hcd_submit_control_message(struct usb_device *device,
 	}
 
 	device->error = usb_transfer_no_error;
+	kprint("Transfer no error!\n");
 
 	return usb_result_ok;
 }
