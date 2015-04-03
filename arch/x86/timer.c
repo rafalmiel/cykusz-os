@@ -14,7 +14,7 @@ static void timer_callback(registers_t *regs)
 	kprint_int(regs->int_no);
 	kprint(" ");
 	kprint_int(tick);
-	kprint("\n");
+	kprint("\r");
 }
 
 void init_timer(u32 freq)
