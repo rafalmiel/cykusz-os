@@ -19,6 +19,7 @@ static void timer_callback(registers_t *regs)
 
 void init_timer(u32 freq)
 {
+	asm volatile("sti");
 	register_interrupt_handler(IRQ0, &timer_callback);
 
 	u32 divisor = 1193180 / freq;
