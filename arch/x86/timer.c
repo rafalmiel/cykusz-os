@@ -1,6 +1,7 @@
 #include <core/timer.h>
 #include <core/io.h>
 
+#include "common.h"
 #include "isr.h"
 
 static u32 tick = 0;
