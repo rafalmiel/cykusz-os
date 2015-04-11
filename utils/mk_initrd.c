@@ -248,6 +248,8 @@ static void write_file(bfs_file_t *bfs, const char *filename)
 	fread(buf, 1, size, file);
 
 	write_file_contents(bfs, buf, size, filename);
+
+	free(buf);
 }
 
 int main(int argc, char *argv[])
