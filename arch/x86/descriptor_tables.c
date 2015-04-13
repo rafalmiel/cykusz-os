@@ -2,6 +2,11 @@
 #include "isr.h"
 #include "common.h"
 
+#define PIC_MASTER_PORT_A 0x20
+#define PIC_MASTER_PORT_B 0x21
+#define PIC_SLAVE_PORT_A 0xA0
+#define PIC_SLAVE_PORT_B 0xA1
+
 extern void gdt_flush(u32);
 extern void idt_flush(u32);
 
@@ -52,6 +57,25 @@ static void gdt_set_gate(s32 num, u32 base, u32 limit, u8 access, u8 gran)
 	gdt_entries[num].access		= access;
 }
 
+static void configure_pic(void)
+{
+	/** ICW1 */
+	outb(PIC_MASTER_PORT_A,	0x11);
+	outb(PIC_SLAVE_PORT_A,	0x11);
+
+	/** ICW2 */
+	outb(PIC_MASTER_PORT_B,	0x20); /* Master offset of 0x20 in the IDT */
+	outb(PIC_SLAVE_PORT_B,	0x28); /* Master offset of 0x28 in the IDT */
+
+	/** ICW3 */
+	outb(PIC_MASTER_PORT_B, 0x04); /* Slaves attached to IR line 2 */
+	outb(PIC_SLAVE_PORT_B,	0x02); /* This slave in IR line 2 of master */
+
+	/** ICW4 */
+	outb(PIC_MASTER_PORT_B, 0x01); /* Set as master */
+	outb(PIC_SLAVE_PORT_B,	0x01); /* Set as slave */
+}
+
 static void init_idt(void)
 {
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
@@ -60,18 +84,9 @@ static void init_idt(void)
 	memset(&idt_entries, 0, sizeof(idt_entry_t)*256);
 	memset(interrupt_handlers, 0, sizeof(isr_t)*256);
 
-	outb(0x20, 0x11);
-	outb(0xA0, 0x11);
-	outb(0x21, 0x20);
-	outb(0xA1, 0x28);
-	outb(0x21, 0x04);
-	outb(0xA1, 0x02);
-	outb(0x21, 0x01);
-	outb(0xA1, 0x01);
-	outb(0x21, 0x0);
-	outb(0xA1, 0x0);
+	configure_pic();
 
-	idt_set_gate(0, (u32)isr0, 0x08, 0x8E);
+	idt_set_gate(0, (u32)isr0, 0x08, 0x8E); //DPL = priv lvl = 0
 	idt_set_gate(1, (u32)isr1, 0x08, 0x8E);
 	idt_set_gate(2, (u32)isr2, 0x08, 0x8E);
 	idt_set_gate(3, (u32)isr3, 0x08, 0x8E);
