@@ -1,5 +1,6 @@
 #include "descriptor_tables.h"
 #include "isr.h"
+#include "common.h"
 
 extern void gdt_flush(u32);
 extern void idt_flush(u32);
