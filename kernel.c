@@ -13,7 +13,7 @@ extern "C"
 #endif
 
 void kernel_main()
-{	
+{
 	u32 phys;
 	kprint("Hello kernel!!!\n");
 

@@ -5,6 +5,7 @@
 
 #define tlb_invalidate(virt) \
 	do { \
+	(void)virt; \
 	} \
 	while (0)
 
