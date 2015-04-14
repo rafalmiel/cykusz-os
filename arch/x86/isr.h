@@ -3,6 +3,12 @@
 
 #include <core/common.h>
 
+#define PIC_MASTER_PORT_A 0x20
+#define PIC_MASTER_PORT_B 0x21
+#define PIC_SLAVE_PORT_A 0xA0
+#define PIC_SLAVE_PORT_B 0xA1
+#define PIC_INTERRUPT_ACK 0x20
+
 #define IRQ0 32
 #define IRQ1 33
 #define IRQ2 34

@@ -24,10 +24,10 @@ void isr_handler(registers_t *reg)
 void irq_handler(registers_t *reg)
 {
 	if (reg->int_no >= 40) {
-		outb(0xA0, 0x20);
+		outb(PIC_MASTER_PORT_B, PIC_INTERRUPT_ACK);
 	}
 
-	outb(0x20, 0x20);
+	outb(PIC_MASTER_PORT_A, PIC_INTERRUPT_ACK);
 
 	if (interrupt_handlers[reg->int_no] != 0) {
 		isr_t handler = interrupt_handlers[reg->int_no];
