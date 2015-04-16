@@ -44,8 +44,13 @@ Makefile : Makefile.$(ARCH)
 	@echo -e "\e[1;33mCC $(FLAGS) $<\e[00m"
 
 
-run: all
+qemu: all
 	qemu-system-i386 -kernel myos.elf
+
+bochs: all
+	cp myos.elf iso/boot/kernel.elf
+	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -A os -input-charset utf8 -quiet -boot-info-table -o os.iso iso
+	bochs -f bochsrc.txt -q
 
 clean:
 	-rm -rf $(ASM_OBJS)
