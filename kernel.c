@@ -49,6 +49,4 @@ void kernel_main()
 
 	kprint("Allocated new mem at addr: ");
 	kprint_hexnl(addr4);
-
-	init_timer(0x10000);
 }

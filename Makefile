@@ -43,17 +43,10 @@ Makefile : Makefile.$(ARCH)
 	@$(CROSS_COMPILE)-gcc $(FLAGS) -MMD -MP -c $< -o $@
 	@echo -e "\e[1;33mCC $(FLAGS) $<\e[00m"
 
-
-qemu: all
-	qemu-system-i386 -kernel myos.elf
-
-bochs: all
-	cp myos.elf iso/boot/kernel.elf
-	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -A os -input-charset utf8 -quiet -boot-info-table -o os.iso iso
-	bochs -f bochsrc.txt -q
-
 clean:
 	-rm -rf $(ASM_OBJS)
 	-rm -rf $(C_OBJS)
 	-rm -rf $(OUT)
 	-rm -rf $(C_DEPS)
+	-rm -rf program/program
+	-rm -rf iso/modules/program

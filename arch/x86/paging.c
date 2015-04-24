@@ -68,11 +68,11 @@ void init_paging(struct multiboot *multiboot)
 
 	/* Identity mapping of initrd image */
 	if (multiboot->mods_count > 0) {
-		paging_identity_map_to(multiboot->mods_addr + 4);
-		paging_identity_map_to(*(u32*)(multiboot->mods_addr
-					       + 0xC0000000
-					       + 4)
-				       );
+		kprint("Additional ident mapping ");
+		kprint_hexnl(multiboot->mods_addr + 4);
+
+		paging_identity_map_to(multiboot->mods_addr);
+		paging_identity_map_to(*(u32*)(phys_to_virt(multiboot->mods_addr)));
 	}
 
 	/**
@@ -110,8 +110,11 @@ void paging_identity_map_to(u32 phys_address)
 {
 	s_current_end = align_4K(s_current_end);
 
-	for (; s_current_end < phys_address; s_current_end += 0x1000) {
-		u32 addr = s_current_end + 0xC0000000;
+	for (; s_current_end <= phys_address; s_current_end += 0x1000) {
+		u32 addr = phys_to_virt(s_current_end);
+
+		kprint("Adding mapping for: ");
+		kprint_hexnl(addr);
 
 		page_t *page = page_get(addr);
 

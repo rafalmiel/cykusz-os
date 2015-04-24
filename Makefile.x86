@@ -1,2 +1,17 @@
 ASM		= nasm
 ASM_FLAGS	= -felf
+
+all : program/program
+
+program/program : program/program.S
+	@nasm -f bin $< -o $@
+	@cp $@ iso/modules
+	@echo -e "\033[1;36mMODULE $<\e[00m"
+
+qemu: all
+	qemu-system-i386 -kernel myos.elf -initrd program/program
+
+bochs: all
+	cp myos.elf iso/boot/kernel.elf
+	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -A os -input-charset utf8 -quiet -boot-info-table -o os.iso iso
+	bochs -f bochsrc.txt -q

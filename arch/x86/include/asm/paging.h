@@ -37,4 +37,8 @@ typedef struct page
 
 page_t *page_get(u32 address);
 
+#define virt_to_phys(virt) ((u32)virt - 0xC0000000)
+
+#define phys_to_virt(phys) ((u32)phys + 0xC0000000)
+
 #endif // ASM_PAGING_H
