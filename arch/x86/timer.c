@@ -18,12 +18,17 @@ static void timer_callback(registers_t *regs)
 	kprint("\r");
 }
 
-void init_timer(u32 freq)
+void init_timer(u32 ms)
 {
 	asm volatile("sti");
 	register_interrupt_handler(IRQ0, &timer_callback);
 
-	u32 divisor = 1193180 / freq;
+	u16 hz = 1000 / ms;
+
+	u16 divisor = 1193182 / hz;
+
+	kprint_intnl(hz);
+	kprint_intnl(divisor);
 
 	outb(0x43, 0x36);
 

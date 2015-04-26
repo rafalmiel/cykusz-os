@@ -15,7 +15,7 @@ C_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.c")
 ASM_SOURCES	:= $(shell find $(PROJ_DIRS) -maxdepth 1 -type f -name "*.S")
 C_OBJS		:= $(patsubst %.c,%.c.o,$(C_SOURCES))
 ASM_OBJS	:= $(patsubst %.S,%.o,$(ASM_SOURCES))
-C_DEPS		:= $(patsubst %.c,%.d,$(C_SOURCES))
+C_DEPS		:= $(patsubst %.c,%.c.d,$(C_SOURCES))
 
 OUTELF		= myos.elf
 OUT		= myos.img
@@ -43,10 +43,8 @@ Makefile : Makefile.$(ARCH)
 	@$(CROSS_COMPILE)-gcc $(FLAGS) -MMD -MP -c $< -o $@
 	@echo -e "\e[1;33mCC $(FLAGS) $<\e[00m"
 
-clean:
+clean : clean_arch
 	-rm -rf $(ASM_OBJS)
 	-rm -rf $(C_OBJS)
 	-rm -rf $(OUT)
 	-rm -rf $(C_DEPS)
-	-rm -rf program/program
-	-rm -rf iso/modules/program
