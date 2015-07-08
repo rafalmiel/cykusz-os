@@ -4,17 +4,30 @@
 #include "descriptor_tables.h"
 #include "paging.h"
 #include "multiboot.h"
+#include "task.h"
 
 extern u32 __phys_end;
 
 extern void kernel_main();
 
-void x86_kernel_main(struct multiboot *multiboot)
+struct t {
+	u32 a;
+	u32 b;
+};
+
+extern void function_test(struct t* t, struct t* t2);
+
+void x86_kernel_main(struct multiboot *multiboot, u32 sp)
 {
+	struct t str;
+	struct t str2;
+
 	init_descriptor_tables();
 	init_output();
 	init_paging(multiboot);
 
+	kprint("Stack pointer: ");
+	kprint_hexnl(sp);
 	kprint("Mod count: ");
 	kprint_hexnl(multiboot->mods_count);
 	kprint("Kernel phys end : ");
@@ -24,7 +37,14 @@ void x86_kernel_main(struct multiboot *multiboot)
 	kprint("Mod addr end : ");
 	kprint_hexnl(*(u32*)(phys_to_virt(multiboot->mods_addr) + 4));
 
+	init_tasking();
+
+	kprint("OOOPS!\n");
+
 	kernel_main();
+
+
+
 
 	if (multiboot->mods_count == 1) {
 		kprint("Executing module..\n");
