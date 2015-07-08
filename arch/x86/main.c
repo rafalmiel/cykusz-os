@@ -10,13 +10,6 @@ extern u32 __phys_end;
 
 extern void kernel_main();
 
-struct t {
-	u32 a;
-	u32 b;
-};
-
-extern void function_test(struct t* t, struct t* t2);
-
 void x86_kernel_main(struct multiboot *multiboot, u32 sp)
 {
 	struct t str;
@@ -39,12 +32,7 @@ void x86_kernel_main(struct multiboot *multiboot, u32 sp)
 
 	init_tasking();
 
-	kprint("OOOPS!\n");
-
 	kernel_main();
-
-
-
 
 	if (multiboot->mods_count == 1) {
 		kprint("Executing module..\n");
