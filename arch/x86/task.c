@@ -11,7 +11,7 @@ task_t *tsk2;
 static void task2()
 {
 	while (1) {
-		kprint("I AM TASK 2\n");
+		kprint("I AM TASK 2\r");
 		swtch(&tsk2->context, tsk1->context);
 	}
 }
@@ -26,17 +26,15 @@ void init_tasking()
 	kprint("ESP: ");
 	kprint_hexnl(read_esp());
 
-	sp = (u8*)(kmalloc_a(4096) + STACK_SIZE);
+	sp = (u8*)(kmalloc_a(STACK_SIZE) + STACK_SIZE);
 	sp -= sizeof *tsk2->context;
 	tsk2->context = (context_t *)sp;
 	memset(tsk2->context, 0, sizeof *tsk2->context);
 	tsk2->context->eip = (u32)task2;
 
-	sp = (u8*)read_esp();
-	sp -= sizeof *tsk1->context;
-	tsk1->context = (context_t *)sp;
+	tsk1->context = 0;
 	while (1) {
-		kprint("I AM TASK 1\n");
+		kprint("I AM TASK 1\r");
 		swtch(&tsk1->context, tsk2->context);
 	}
 }

@@ -10,17 +10,14 @@ extern u32 __phys_end;
 
 extern void kernel_main();
 
-void x86_kernel_main(struct multiboot *multiboot, u32 sp)
+void x86_kernel_main(struct multiboot *multiboot)
 {
-	struct t str;
-	struct t str2;
-
 	init_descriptor_tables();
 	init_output();
 	init_paging(multiboot);
 
 	kprint("Stack pointer: ");
-	kprint_hexnl(sp);
+	kprint_hexnl(read_esp());
 	kprint("Mod count: ");
 	kprint_hexnl(multiboot->mods_count);
 	kprint("Kernel phys end : ");

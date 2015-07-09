@@ -115,9 +115,7 @@ StartInHigherHalf:
 	invlpg [0]
 
 	mov esp, stack+STACKSIZE			; set up the stack
-	mov ecx, esp
 
-	push ecx
 	add ebx, KERNEL_VIRTUAL_BASE			; set up multiboot struct ptr
 	push ebx
 
