@@ -33,27 +33,27 @@ static void *find_rsdt_address(void)
 	u32 rsdt_addr = 0;
 	u32 *s = (u32*)0xC00E0000;
 
-	for (s = (u32*)0xC00E0000; s < 0xC0100000; s++) {
+	for (s = (u32*)0xC00E0000; s < (u32*)0xC0100000; s++) {
 		rsdp = check_rsdp_ptr(s);
 
 		if (rsdp) {
 			rsdt_addr = rsdp->rsdt_address;
 			paging_identity_map(rsdt_addr);
-			return (void*)(phys_to_virt(rsdt_addr));
+			return (void*)((rsdt_addr));
 		}
 	}
 
 	// Look in Extended Bios Data Area if above fails
 	u32 ebda = *((u16 *) phys_to_virt(0x40E));	// get pointer
-	ebda = phys_to_virt(ebda*0x10 & 0x000FFFFF);	// transform segment into linear address
+	ebda = phys_to_virt(ebda * 0x10 & (0x000FFFFF));	// transform segment into linear address
 
-	for (s = (u32*)ebda; s < ebda + 1024; s++) {
+	for (s = (u32*)ebda; s < (u32*)ebda + 1024; s++) {
 		rsdp = check_rsdp_ptr(s);
 
 		if (rsdp) {
 			rsdt_addr = rsdp->rsdt_address;
 			paging_identity_map(rsdt_addr);
-			return (void*)(phys_to_virt(rsdt_addr));
+			return (void*)((rsdt_addr));
 		}
 	}
 
@@ -76,7 +76,7 @@ void init_acpi(void)
 		while (0 < entries--) {
 			paging_identity_map(*rsdt_addr);
 
-			u8 *p = (u8*)phys_to_virt(*rsdt_addr);
+			u8 *p = (u8*)(*rsdt_addr);
 
 			for (u32 i = 0; i < 4; ++i) {
 				kprint_char(*p++);

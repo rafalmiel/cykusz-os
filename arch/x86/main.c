@@ -31,6 +31,7 @@ void x86_kernel_main(struct multiboot *multiboot)
 	init_acpi();
 	init_tasking();
 
+
 	kernel_main();
 
 	if (multiboot->mods_count == 1) {

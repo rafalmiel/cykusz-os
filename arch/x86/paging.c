@@ -71,8 +71,8 @@ void init_paging(struct multiboot *multiboot)
 		kprint("Additional ident mapping ");
 		kprint_hexnl(multiboot->mods_addr + 4);
 
-		paging_identity_map_to(multiboot->mods_addr);
-		paging_identity_map_to(*(u32*)(phys_to_virt(multiboot->mods_addr)));
+		paging_kern_map_to(multiboot->mods_addr);
+		paging_kern_map_to(*(u32*)(phys_to_virt(multiboot->mods_addr)));
 	}
 
 	/**
@@ -101,12 +101,17 @@ page_t *page_get(u32 address)
 	if (kernel_pd.tables[table_idx]) {
 		return &kernel_pd.tables[table_idx]->pages[address % 1024];
 	} else {
-		return 0;
+		u32 phys;
+		page_table_t *pg = (page_table_t*)kmalloc_ap(sizeof (page_table_t), &phys);
+		kernel_pd.tables[table_idx] = pg;
+		memset(kernel_pd.tables[table_idx], 0, 0x1000);
+		kernel_pd.tablesPhysical[table_idx] = phys | 0x7;
+		return &pg->pages[address % 1024];
 	}
 }
 
 
-void paging_identity_map_to(u32 phys_address)
+void paging_kern_map_to(u32 phys_address)
 {
 	s_current_end = align_4K(s_current_end);
 
@@ -129,10 +134,10 @@ void paging_identity_map(u32 phys_address)
 		phys_address = align_4K(phys_address - 0x1000);
 	}
 
-	page = page_get(phys_to_virt(phys_address));
-	//kprint("MAPPING ");
-	//kprint_hex(phys_address);
-	//kprint(" TO ");
-	//kprint_hexnl(phys_to_virt(phys_address));
-	frame_alloc_at(page, phys_address, phys_to_virt(phys_address));
+	page = page_get(phys_address);
+//	kprint("MAPPING ");
+//	kprint_hex(phys_address);
+//	kprint(" TO ");
+//	kprint_hexnl((phys_address));
+	frame_alloc_at(page, phys_address, phys_address);
 }

@@ -25,7 +25,9 @@ static void clear_frame(u32 frame_addr)
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
 
-	s_frames[idx] &= ~(0x1 << off);
+	if (idx < s_frames_size) {
+		s_frames[idx] &= ~(0x1 << off);
+	}
 }
 
 static u32 test_frame(u32 frame_addr)
@@ -33,7 +35,12 @@ static u32 test_frame(u32 frame_addr)
 	u32 frame = frame_addr / 0x1000;
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
-	return (s_frames[idx] & (0x1 << off));
+
+	if (idx < s_frames_size) {
+		return (s_frames[idx] & (0x1 << off));
+	}
+
+	return 0;
 }
 
 static u32 first_frame()
