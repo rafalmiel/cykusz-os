@@ -33,19 +33,30 @@ static void *find_rsdt_address(void)
 	u32 rsdt_addr = 0;
 	u32 *s = (u32*)0xC00E0000;
 
-	while ((u32)s < 0xC0100000) {
-		rsdp = check_rsdp_ptr((void*)s);
+	for (s = (u32*)0xC00E0000; s < 0xC0100000; s++) {
+		rsdp = check_rsdp_ptr(s);
 
 		if (rsdp) {
 			rsdt_addr = rsdp->rsdt_address;
 			paging_identity_map(rsdt_addr);
 			return (void*)(phys_to_virt(rsdt_addr));
 		}
-
-		s++;
 	}
 
-	//TODO: Look in Extended Bios Data Area if above fails
+	// Look in Extended Bios Data Area if above fails
+	u32 ebda = *((u16 *) phys_to_virt(0x40E));	// get pointer
+	ebda = phys_to_virt(ebda*0x10 & 0x000FFFFF);	// transform segment into linear address
+
+	for (s = (u32*)ebda; s < ebda + 1024; s++) {
+		rsdp = check_rsdp_ptr(s);
+
+		if (rsdp) {
+			rsdt_addr = rsdp->rsdt_address;
+			paging_identity_map(rsdt_addr);
+			return (void*)(phys_to_virt(rsdt_addr));
+		}
+	}
+
 
 	return (void *) (0);
 }
