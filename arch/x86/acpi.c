@@ -63,9 +63,28 @@ static void *find_rsdt_address(void)
 
 void init_acpi(void)
 {
-	u8 *rsdt_addr = find_rsdt_address();
+	u32* rsdt_addr = find_rsdt_address();
 
 	if (memcmp(rsdt_addr, "RSDT", 4) == 0) {
-		kprint("Found RSDT header!\n");
+		s32 entries = (*(rsdt_addr + 1) - 36) / 4;
+
+		kprint("Found RSDT header! number of entries: ");
+		kprint_intnl(entries);
+
+		rsdt_addr += 36/4;
+
+		while (0 < entries--) {
+			paging_identity_map(*rsdt_addr);
+
+			u8 *p = (u8*)phys_to_virt(*rsdt_addr);
+
+			for (u32 i = 0; i < 4; ++i) {
+				kprint_char(*p++);
+			}
+
+			kprint("\n");
+
+			rsdt_addr++;
+		}
 	}
 }

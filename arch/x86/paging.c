@@ -130,9 +130,9 @@ void paging_identity_map(u32 phys_address)
 	}
 
 	page = page_get(phys_to_virt(phys_address));
-	kprint("MAPPING ");
-	kprint_hex(phys_address);
-	kprint(" TO ");
-	kprint_hexnl(phys_to_virt(phys_address));
+	//kprint("MAPPING ");
+	//kprint_hex(phys_address);
+	//kprint(" TO ");
+	//kprint_hexnl(phys_to_virt(phys_address));
 	frame_alloc_at(page, phys_address, phys_to_virt(phys_address));
 }
