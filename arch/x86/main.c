@@ -5,6 +5,7 @@
 #include "paging.h"
 #include "multiboot.h"
 #include "task.h"
+#include "acpi.h"
 
 extern u32 __phys_end;
 
@@ -27,6 +28,7 @@ void x86_kernel_main(struct multiboot *multiboot)
 	kprint("Mod addr end : ");
 	kprint_hexnl(*(u32*)(phys_to_virt(multiboot->mods_addr) + 4));
 
+	init_acpi();
 	init_tasking();
 
 	kernel_main();

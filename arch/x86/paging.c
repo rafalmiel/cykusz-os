@@ -114,10 +114,25 @@ void paging_identity_map_to(u32 phys_address)
 		u32 addr = phys_to_virt(s_current_end);
 
 		kprint("Adding mapping for: ");
-		kprint_hexnl(addr);
+		kprint_hexnl(s_current_end);
 
 		page_t *page = page_get(addr);
 
 		frame_alloc_at(page, s_current_end, addr);
 	}
+}
+
+void paging_identity_map(u32 phys_address)
+{
+	page_t *page;
+	if ((phys_address & 0xFFF) != 0) {
+		phys_address = align_4K(phys_address - 0x1000);
+	}
+
+	page = page_get(phys_to_virt(phys_address));
+	kprint("MAPPING ");
+	kprint_hex(phys_address);
+	kprint(" TO ");
+	kprint_hexnl(phys_to_virt(phys_address));
+	frame_alloc_at(page, phys_address, phys_to_virt(phys_address));
 }

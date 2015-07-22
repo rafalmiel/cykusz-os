@@ -17,6 +17,7 @@ char *strcpy(char *dest, const char *src);
 char *strcat(char *dest, const char *src);
 void *memset(void *ptr, int value, u32 size);
 void *memcpy (void *destination, const void *source, u32 num);
+s32 memcmp(const void *s1, const void *s2, u32 n);
 
 static inline u32 align(u32 addr, u32 to)
 {

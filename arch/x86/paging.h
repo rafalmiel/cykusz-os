@@ -20,6 +20,7 @@ typedef struct page_directory
 
 void init_paging(struct multiboot *multiboot);
 
+void paging_identity_map(u32 phys_address);
 void paging_identity_map_to(u32 phys_address);
 
 

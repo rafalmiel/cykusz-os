@@ -47,3 +47,21 @@ void *memcpy(void *destination, const void *source, u32 num)
 	for(; num != 0; num--) *dp++ = *sp++;
 	return destination;
 }
+
+
+s32 memcmp(const void *s1, const void *s2, u32 n)
+{
+	u32 i, a, b;
+	for (i = 0; i < n; ++i) {
+		a = *(u8*)s1;
+		b = *(u8*)s2;
+		if (a != b) {
+			return a - b;
+		}
+
+		(u8*)s1++;
+		(u8*)s2++;
+	}
+
+	return 0;
+}

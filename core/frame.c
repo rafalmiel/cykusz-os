@@ -14,7 +14,9 @@ static void set_frame(u32 frame_addr)
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
 
-	s_frames[idx] |= (0x1 << off);
+	if (idx < s_frames_size) {
+		s_frames[idx] |= (0x1 << off);
+	}
 }
 
 static void clear_frame(u32 frame_addr)
