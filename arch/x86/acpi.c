@@ -117,7 +117,8 @@ static void parse_matd(void *addr)
 		switch (e->type) {
 		case 0:
 		{
-			acpi_matd_entry_local_apic_t *i = a;
+			acpi_matd_entry_local_apic_t *i =
+					(acpi_matd_entry_local_apic_t *)a;
 			log("        apic processor id", i->procid);
 			log("        apic id", i->apicid);
 			log("        flags", i->flags);
@@ -126,7 +127,8 @@ static void parse_matd(void *addr)
 		}
 		case 1:
 		{
-			acpi_matd_entry_io_apic_t *i = a;
+			acpi_matd_entry_io_apic_t *i =
+					(acpi_matd_entry_io_apic_t *)a;
 			log("        io apic id", i->ioapicid);
 			log("        io apic address", i->ioapicaddress);
 			log("        global sys int base", i->globalintbase);
@@ -134,7 +136,8 @@ static void parse_matd(void *addr)
 		}
 		case 2:
 		{
-			acpi_matd_entry_intsrc_t *i = a;
+			acpi_matd_entry_intsrc_t *i =
+					(acpi_matd_entry_intsrc_t *)a;
 			log("        bus source", i->bussrc);
 			log("        irq source", i->irqsrc);
 			log("        global sys int", i->globalsysint);
@@ -144,9 +147,6 @@ static void parse_matd(void *addr)
 		default:
 			break;
 		}
-
-		if (e->lenght == 0)
-			return;
 
 		a += (e->lenght - 2);
 	}

@@ -72,6 +72,12 @@ static void configure_pic(void)
 	outb(PIC_SLAVE_PORT_B,	0x01); /* Set as slave */
 }
 
+static void disable_pic(void)
+{
+	outb(PIC_MASTER_PORT_B,	0xFF);
+	outb(PIC_SLAVE_PORT_B,	0xFF);
+}
+
 static void init_idt(void)
 {
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
@@ -81,6 +87,7 @@ static void init_idt(void)
 	memset(interrupt_handlers, 0, sizeof(isr_t)*256);
 
 	configure_pic();
+	//disable_pic();
 
 	idt_set_gate(0, (u32)isr0, 0x08, 0x8E); //DPL = priv lvl = 0
 	idt_set_gate(1, (u32)isr1, 0x08, 0x8E);

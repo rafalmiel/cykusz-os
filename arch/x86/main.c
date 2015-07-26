@@ -29,8 +29,7 @@ void x86_kernel_main(struct multiboot *multiboot)
 	kprint_hexnl(*(u32*)(phys_to_virt(multiboot->mods_addr) + 4));
 
 	init_acpi();
-	init_tasking();
-
+	//init_tasking();
 
 	kernel_main();
 
