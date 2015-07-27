@@ -2,7 +2,7 @@
 
 #include "acpi.h"
 #include "paging.h"
-
+#include "ioapic.h"
 
 static u8 checksum(void *addr, u32 size)
 {
@@ -98,8 +98,8 @@ static void parse_matd(void *addr)
 	a += sizeof *matd;
 	acpi_matd_entry_t *e = (acpi_matd_entry_t *)a;
 
-	kprint_hexnl(e->lenght);
-	kprint_hexnl(e->type);
+	//kprint_hexnl(e->lenght);
+	//kprint_hexnl(e->type);
 
 	limit += matd->lenght;
 
@@ -119,9 +119,9 @@ static void parse_matd(void *addr)
 		{
 			acpi_matd_entry_local_apic_t *i =
 					(acpi_matd_entry_local_apic_t *)a;
-			log("        apic processor id", i->procid);
-			log("        apic id", i->apicid);
-			log("        flags", i->flags);
+			//log("        apic processor id", i->procid);
+			//log("        apic id", i->apicid);
+			//log("        flags", i->flags);
 
 			break;
 		}
@@ -132,16 +132,24 @@ static void parse_matd(void *addr)
 			log("        io apic id", i->ioapicid);
 			log("        io apic address", i->ioapicaddress);
 			log("        global sys int base", i->globalintbase);
+
+			paging_identity_map(i->ioapicaddress);
+			ioapic_set_base((u32*)i->ioapicaddress);
+			log("        ioapic id", ioapic_get_id());
+			log("        ioapic ident", ioapic_get_identification());
+			log("        ioapic max ent", ioapic_get_max_red_entries());
+			log("        ioapic ver", ioapic_get_version());
+
 			break;
 		}
 		case 2:
 		{
 			acpi_matd_entry_intsrc_t *i =
 					(acpi_matd_entry_intsrc_t *)a;
-			log("        bus source", i->bussrc);
-			log("        irq source", i->irqsrc);
-			log("        global sys int", i->globalsysint);
-			log("        flags", i->flags);
+			//log("        bus source", i->bussrc);
+			//log("        irq source", i->irqsrc);
+			//log("        global sys int", i->globalsysint);
+			//log("        flags", i->flags);
 			break;
 		}
 		default:

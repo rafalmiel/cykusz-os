@@ -41,9 +41,9 @@ void x86_kernel_main(struct multiboot *multiboot)
 		u32 modaddr = phys_to_virt(multiboot->mods_addr);
 		modaddr = phys_to_virt(*(u32*)modaddr);
 
-		kprint("Modadr is ");
-		kprint_hexnl(modaddr);
-		kprint_hexnl(*(u32*)modaddr);
+		//kprint("Modadr is ");
+		//kprint_hexnl(modaddr);
+		//kprint_hexnl(*(u32*)modaddr);
 
 		module_fun module = (module_fun)modaddr;
 

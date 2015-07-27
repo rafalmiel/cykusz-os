@@ -27,8 +27,8 @@ void init_timer(u32 ms)
 
 	u16 divisor = 1193182 / hz;
 
-	kprint_intnl(hz);
-	kprint_intnl(divisor);
+	//kprint_intnl(hz);
+	//kprint_intnl(divisor);
 
 	outb(0x43, 0x36);
 

@@ -9,7 +9,7 @@ program/program : program/program.S
 	@echo -e "\033[1;36mMODULE $<\e[00m"
 
 qemu: all
-	qemu-system-i386 -kernel myos.elf -initrd program/program -m 16M
+	qemu-system-i386 -kernel myos.elf -initrd program/program -m 16M -smp 4
 
 bochs: all
 	cp myos.elf iso/boot/kernel.elf
