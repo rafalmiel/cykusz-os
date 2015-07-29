@@ -20,6 +20,23 @@ static void timer_callback(registers_t *regs)
 	kprint("\r");
 }
 
+void init_timer_divisor(u32 div)
+{
+	register_interrupt_handler(IRQ0, &timer_callback);
+
+	u16 divisor = div;
+
+	outb(0x43, 0x36);
+
+	u8 l = (u8)(divisor & 0xFF);
+	u8 h = (u8)((divisor >> 8) & 0xFF);
+
+	outb(0x40, h);
+	outb(0x40, l);
+
+	ioapic_set_int(acpi_remap_irq(0), 32);
+}
+
 void init_timer(u32 ms)
 {
 	register_interrupt_handler(IRQ0, &timer_callback);

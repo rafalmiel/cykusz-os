@@ -42,6 +42,8 @@ void rpi_timer_irqclear()
 	rpi_timer->irqclear = 1;
 }
 
+void init_timer_divisor(u32 /*div*/){}
+
 void init_timer(u32 freq)
 {
 	rpi_basic_interrupt_enable(RPI_BASIC_IRQ_ARM_TIMER);

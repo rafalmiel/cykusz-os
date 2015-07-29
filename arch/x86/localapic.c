@@ -48,11 +48,14 @@ static u32 lapic_read(u32 reg)
 
 void init_lapic(void)
 {
+	// Clear task priority to enable all interrupts
 	lapic_write(LAPIC_REG_TPR, 0);
 
-	lapic_write(LAPIC_REG_DFR, 0xffffffff);
-	lapic_write(LAPIC_REG_LCR, 0x01000000);
+	// Logical Destination Mode
+	lapic_write(LAPIC_REG_DFR, 0xffffffff);	// Flat mode
+	lapic_write(LAPIC_REG_LCR, 0x01000000);	// All cpus use logical id 1
 
+	// Configure Spurious Interrupt Vector Register
 	lapic_write(LAPIC_REG_SIVR, 0x100 | 0xff);
 }
 
