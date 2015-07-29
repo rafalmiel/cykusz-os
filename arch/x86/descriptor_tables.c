@@ -1,6 +1,11 @@
+#include <core/io.h>
 #include "descriptor_tables.h"
 #include "isr.h"
 #include "common.h"
+#include "acpi.h"
+#include "localapic.h"
+#include "ioapic.h"
+#include <core/timer.h>
 
 extern void gdt_flush(u32);
 extern void idt_flush(u32);
@@ -19,13 +24,17 @@ static idt_ptr_t idt_ptr;
 
 extern isr_t interrupt_handlers[];
 
-static void enable_interrupts(void);
+static void init_pic(void);
 
 void init_descriptor_tables()
 {
 	init_gdt();
 	init_idt();
-	enable_interrupts();
+	init_pic();
+	init_lapic();
+	init_ioapic();
+
+	__asm__ volatile("sti");
 }
 
 static void init_gdt(void)
@@ -138,11 +147,12 @@ static void init_idt(void)
 	idt_set_gate(45, (u32)irq13, 0x08, 0x8E);
 	idt_set_gate(46, (u32)irq14, 0x08, 0x8E);
 	idt_set_gate(47, (u32)irq15, 0x08, 0x8E);
+	idt_set_gate(0xFF, (u32)irq_spurious, 0x08, 0x8E);
 
 	idt_flush((u32)&idt_ptr);
 }
 
-static void enable_interrupts(void)
+static void init_pic(void)
 {
 	configure_pic();
 	disable_pic();

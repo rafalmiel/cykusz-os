@@ -1,3 +1,5 @@
+#include <core/common.h>
+
 #include "localapic.h"
 
 #define LAPIC_REG_ID		0x20
@@ -27,3 +29,35 @@
 #define LAPIC_REG_CCNT		0x390
 #define LAPIC_REG_DCNF		0x3E0
 
+static volatile u8 *s_lapic_base = (u8*)0xFEE00000;
+
+void lapic_set_base(u32 *base)
+{
+	s_lapic_base = (u8*)base;
+}
+
+static void lapic_write(u32 reg, u32 value)
+{
+	*(volatile u32*)(s_lapic_base + reg) = value;
+}
+
+static u32 lapic_read(u32 reg)
+{
+	return *(volatile u32*)(s_lapic_base + reg);
+}
+
+void init_lapic(void)
+{
+	lapic_write(LAPIC_REG_TPR, 0);
+
+	lapic_write(LAPIC_REG_DFR, 0xffffffff);
+	lapic_write(LAPIC_REG_LCR, 0x01000000);
+
+	lapic_write(LAPIC_REG_SIVR, 0x100 | 0xff);
+}
+
+
+void lapic_end_of_interrupt()
+{
+	lapic_write(LAPIC_REG_EOI, 0);
+}

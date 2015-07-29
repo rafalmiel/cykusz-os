@@ -2,6 +2,7 @@
 
 #include "acpi.h"
 #include "paging.h"
+#include "localapic.h"
 #include "ioapic.h"
 
 static u8 *s_madt;
@@ -84,9 +85,9 @@ static void *find_rsdt_address(void)
 
 static inline void log(const char *txt, u32 value)
 {
-	kprint(txt);
-	kprint(": ");
-	kprint_hexnl(value);
+	//kprint(txt);
+	//kprint(": ");
+	//kprint_hexnl(value);
 }
 
 static void parse_matd(void *addr)
@@ -102,6 +103,9 @@ static void parse_matd(void *addr)
 	kprint_hexnl(matd->localcontrolleraddress);
 	kprint("APIC: Flags: ");
 	kprint_hexnl(matd->flags);
+
+	paging_identity_map(matd->localcontrolleraddress);
+	lapic_set_base((u32*)matd->localcontrolleraddress);
 
 	a += sizeof *matd;
 
@@ -141,7 +145,9 @@ static void parse_matd(void *addr)
 			//log("        global sys int base", i->globalintbase);
 			//
 			paging_identity_map(i->ioapicaddress);
-			//ioapic_set_base((u32*)i->ioapicaddress);
+
+			//TODO: Make it aware of multiple cpus
+			ioapic_set_base((u32*)i->ioapicaddress);
 			//log("        ioapic id", ioapic_get_id());
 			//log("        ioapic ident", ioapic_get_identification());
 			log("        ioapic max ent", ioapic_get_max_red_entries());
@@ -158,7 +164,7 @@ static void parse_matd(void *addr)
 			log("        global sys int", i->globalsysint);
 			log("        flags", i->flags);
 
-			for (u32 c = 0; c < 0xF000000; c++) {}
+			//for (u32 c = 0; c < 0xF000000; c++) {}
 			break;
 		}
 		default:

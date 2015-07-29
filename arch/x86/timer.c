@@ -3,6 +3,8 @@
 
 #include "common.h"
 #include "isr.h"
+#include "ioapic.h"
+#include "acpi.h"
 
 static u32 tick = 0;
 
@@ -20,15 +22,14 @@ static void timer_callback(registers_t *regs)
 
 void init_timer(u32 ms)
 {
-	asm volatile("sti");
 	register_interrupt_handler(IRQ0, &timer_callback);
 
 	u16 hz = 1000 / ms;
 
 	u16 divisor = 1193182 / hz;
 
-	//kprint_intnl(hz);
-	//kprint_intnl(divisor);
+	kprint_intnl(hz);
+	kprint_intnl(divisor);
 
 	outb(0x43, 0x36);
 
@@ -37,4 +38,6 @@ void init_timer(u32 ms)
 
 	outb(0x40, h);
 	outb(0x40, l);
+
+	ioapic_set_int(acpi_remap_irq(0), 32);
 }

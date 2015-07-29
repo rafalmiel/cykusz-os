@@ -71,6 +71,10 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
+global irq_spurious
+irq_spurious:
+	iret
+
 extern isr_handler
 
 isr_common_stub:

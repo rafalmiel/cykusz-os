@@ -59,11 +59,6 @@ typedef union ioapic_reg_redtbl_high {
 	} v;
 } ioapic_reg_redtbl_high_t;
 
-void ioapic_set_base(u32 *base)
-{
-	s_ioapic_base = (u8*)base;
-}
-
 static inline u32 read_data(u32 reg)
 {
 	volatile u32 *write = (u32*)s_ioapic_base;
@@ -72,6 +67,42 @@ static inline u32 read_data(u32 reg)
 	*write = reg;
 
 	return *read;
+}
+
+static inline void write_data(u32 reg, u32 data)
+{
+	volatile u32 *write = (u32*)s_ioapic_base;
+	volatile u32 *read = (u32*)(s_ioapic_base + 0x10);
+
+	*write = reg;
+
+	*read = data;
+}
+
+static void mask_interrupt(u32 i, u32 masked)
+{
+	ioapic_reg_redtbl_low_t rl;
+	ioapic_reg_redtbl_high_t rh;
+	rl.raw = 0;
+	rl.v.int_mask = masked;
+	rh.raw = 0;
+
+	write_data(IOAPIC_REG_REDTBL_LOW(i), rl.raw);
+	write_data(IOAPIC_REG_REDTBL_HIGH(i), rh.raw);
+}
+
+void ioapic_set_base(u32 *base)
+{
+	s_ioapic_base = (u8*)base;
+}
+
+void init_ioapic()
+{
+	u32 cnt = ioapic_get_max_red_entries();
+
+	for (u32 i = 0; i < cnt; ++i) {
+		mask_interrupt(i, 1);
+	}
 }
 
 u32 ioapic_get_id(void)
@@ -106,4 +137,19 @@ u32 ioapic_get_identification(void)
 	id.raw = read_data(IOAPIC_REG_ARB);
 
 	return id.v.id;
+}
+
+
+void ioapic_set_int(u32 i, u32 idt_idx)
+{
+	ioapic_reg_redtbl_low_t rl;
+	ioapic_reg_redtbl_high_t rh;
+	rl.raw = 0;
+	rl.v.intvec = idt_idx;
+	rl.v.int_mask = 0;
+	rh.raw = 0;
+	rh.v.destination = 0;
+
+	write_data(IOAPIC_REG_REDTBL_LOW(i), rl.raw);
+	write_data(IOAPIC_REG_REDTBL_HIGH(i), rh.raw);
 }

@@ -13,9 +13,10 @@ extern void kernel_main();
 
 void x86_kernel_main(struct multiboot *multiboot)
 {
-	init_descriptor_tables();
 	init_output();
 	init_paging(multiboot);
+	init_acpi();
+	init_descriptor_tables();
 
 	kprint("Stack pointer: ");
 	kprint_hexnl(read_esp());
@@ -28,12 +29,11 @@ void x86_kernel_main(struct multiboot *multiboot)
 	kprint("Mod addr end : ");
 	kprint_hexnl(*(u32*)(phys_to_virt(multiboot->mods_addr) + 4));
 
-	init_acpi();
 	//init_tasking();
 
 	kernel_main();
 
-	if (multiboot->mods_count == 1) {
+	if (multiboot->mods_count == 13) {
 		kprint("Executing module..\n");
 
 		typedef void (*module_fun)(void);
@@ -41,13 +41,13 @@ void x86_kernel_main(struct multiboot *multiboot)
 		u32 modaddr = phys_to_virt(multiboot->mods_addr);
 		modaddr = phys_to_virt(*(u32*)modaddr);
 
-		//kprint("Modadr is ");
 		//kprint_hexnl(modaddr);
 		//kprint_hexnl(*(u32*)modaddr);
 
 		module_fun module = (module_fun)modaddr;
 
 		module();
+		kprint("Modadr is ");
 
 	}
 }
