@@ -6,7 +6,7 @@
 #define IOAPIC_REG_REDTBL_LOW(num)	(0x10 + (2*(num)))
 #define IOAPIC_REG_REDTBL_HIGH(num)	(0x11 + (2*(num)))
 
-static u8 *s_ioapic_base = (u32*)0xFEC00000;
+static u8 *s_ioapic_base = (u8*)0xFEC00000;
 
 typedef union ioapic_reg_id {
 	volatile u32 raw;
@@ -47,26 +47,27 @@ typedef union ioapic_reg_redtbl_low {
 		volatile u32 remote_irr		: 1;
 		volatile u32 trigger_mode	: 1;
 		volatile u32 int_mask		: 1;
+		volatile u32 _reserved		: 15;
 	} v;
 } ioapic_reg_redtbl_low_t;
 
 typedef union ioapic_reg_redtbl_high {
 	volatile u32 raw;
 	struct {
-		volatile u32 destination	: 8;
 		volatile u32 _reserver		: 24;
+		volatile u32 destination	: 8;
 	} v;
 } ioapic_reg_redtbl_high_t;
 
 void ioapic_set_base(u32 *base)
 {
-	s_ioapic_base = base;
+	s_ioapic_base = (u8*)base;
 }
 
-static inline volatile u32 read_data(u32 reg)
+static inline u32 read_data(u32 reg)
 {
 	volatile u32 *write = (u32*)s_ioapic_base;
-	volatile u32 *read = (u32*)(s_ioapic_base + 0x10);
+	u32 *read = (u32*)(s_ioapic_base + 0x10);
 
 	*write = reg;
 

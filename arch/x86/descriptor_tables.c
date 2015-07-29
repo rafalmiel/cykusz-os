@@ -19,10 +19,13 @@ static idt_ptr_t idt_ptr;
 
 extern isr_t interrupt_handlers[];
 
+static void enable_interrupts(void);
+
 void init_descriptor_tables()
 {
 	init_gdt();
 	init_idt();
+	enable_interrupts();
 }
 
 static void init_gdt(void)
@@ -86,9 +89,6 @@ static void init_idt(void)
 	memset(&idt_entries, 0, sizeof(idt_entry_t)*256);
 	memset(interrupt_handlers, 0, sizeof(isr_t)*256);
 
-	configure_pic();
-	//disable_pic();
-
 	idt_set_gate(0, (u32)isr0, 0x08, 0x8E); //DPL = priv lvl = 0
 	idt_set_gate(1, (u32)isr1, 0x08, 0x8E);
 	idt_set_gate(2, (u32)isr2, 0x08, 0x8E);
@@ -140,6 +140,12 @@ static void init_idt(void)
 	idt_set_gate(47, (u32)irq15, 0x08, 0x8E);
 
 	idt_flush((u32)&idt_ptr);
+}
+
+static void enable_interrupts(void)
+{
+	configure_pic();
+	disable_pic();
 }
 
 static void idt_set_gate(u8 num, u32 base, u16 sel, u8 flags)

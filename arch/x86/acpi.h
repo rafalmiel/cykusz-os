@@ -4,6 +4,7 @@
 #include <core/common.h>
 
 void init_acpi(void);
+u32 acpi_remap_irq(u32 irq);
 
 typedef struct acpi_rsdp_desc {
 	char signature[8];
