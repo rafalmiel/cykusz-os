@@ -2,7 +2,39 @@ global enable_interrupts
 
 section .text
 bits 64
+remap_PIC:
+    in al, 0x21                   ; save pic1 mask
+    mov cl, al
+    in al, 0xA1                   ; save pic2 mask
+    mov ch, al
+
+    mov al, 0x11
+    out 0x20, al                ; send initialize command to pic1
+    out 0xA0, al                ; send initialize command to pic2
+
+    mov al, 0x20
+    out 0x21, al                ; set vector offset of pic1 to 0x20
+    mov al, 0x28
+    out 0xA1, al                ; set vector offset of pic2 to 0x28
+
+    mov al, 4
+    out 0x21, al                   ; tell pic1 that there is a slave PIC at IRQ2 (0000 0100)
+    mov al, 2
+    out 0xA1, al                   ; tell pic2 its cascade identity (0000 0010)
+
+    mov al, 0x1
+    out 0x21, al                 ; 8086 mode for pic1
+    out 0xA1, al                 ; 8086 mode for pic2
+
+    mov al, cl
+    out 0x21, al                  ; restore pic1 mask
+    mov al, ch
+    out 0xA1, al                  ; restore pic2 mask
+
+    ret
+
 enable_interrupts:
+	call remap_PIC
 	; Save to make following instructions smaller
 	mov rdi, IDT
 	
@@ -56,12 +88,16 @@ set_idt:
 ErrorCommon:
     pop rax
     pop rax
-    mov [0xb8000], al
+    ;mov [0xb8000], al
+    ;mov [0xb8000], word 0x4234243
     ;add rsp, 1*8
     iretq
     
 IRQCommon:
+
     pop rbx
+    add bx, '0'
+    mov [0xb8000], bx
     iretq
 
 %macro ISR_NOERRNO	1

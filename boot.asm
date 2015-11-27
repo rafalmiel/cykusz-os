@@ -6,13 +6,15 @@ extern enable_paging
 section .text
 bits 32
 start:
+	cli
+
 	mov esp, stack_top
 	mov edi, ebx       ;Multiboot address
 
 	call enable_paging
-	
+
 	lgdt [gdt64.pointer]
-                
+
 	; update selectors
 	mov ax, gdt64.data
 	mov ss, ax
